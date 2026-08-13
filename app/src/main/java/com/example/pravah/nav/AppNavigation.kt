@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.pravah.R
 import com.example.pravah.view.common.LoginView
+import com.example.pravah.view.common.RegistrationView
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +42,10 @@ fun AppNavigation(rootNavController: NavHostController) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("login") {
-                LoginView()
+                LoginView(navController, rootNavController)
+            }
+            composable("register") {
+                RegistrationView(navController)
             }
         }
     }

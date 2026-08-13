@@ -18,16 +18,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,24 +45,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.pravah.R
 import com.example.pravah.viewmodel.AuthViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginView(navController: NavController, rootNavController: NavController, viewModel: AuthViewModel = viewModel()){
+fun RegistrationView(navController: NavController, viewModel: AuthViewModel = viewModel()) {
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
+    var isConfirmPasswordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    var expanded by remember { mutableStateOf(false) }
-    var selectedInstitution by remember { mutableStateOf("") }
-    var institution = listOf<String>()
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -97,60 +92,24 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                             .fillMaxWidth()
                             .height(200.dp)
                     )
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = {
-                            expanded = !expanded
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = {},
+                        label = { Text(stringResource(R.string.institution_name)) },
+                        singleLine = true,
+                        isError = name.isNotEmpty() && !viewModel.isValidName(name),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.AccountBalance,
+                                contentDescription = "",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedInstitution,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = {
-                                Text("Select Institution")
-                            },
-                            placeholder = {
-                                Text("Choose Institution")
-                            },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                            },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth(),
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.AccountBalance,
-                                    contentDescription = "",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = {
-                                expanded = false
-                            }
-                        ) {
-                            institution.forEach { institution ->
-
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(institution)
-                                    },
-                                    onClick = {
-                                        selectedInstitution = institution
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    )
+                    Spacer(Modifier.height(16.dp))
                     OutlinedTextField(
                         value = email,
-                        onValueChange = {email = it},
+                        onValueChange = {},
                         label = { Text(stringResource(R.string.email)) },
                         singleLine = true,
                         isError = email.isNotEmpty() && !viewModel.isValidEmail(email),
@@ -186,22 +145,28 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                         }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Text(
-                            text = stringResource(R.string.forgot_password),
-                            color = colorResource(R.color.purple_700),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .clickable {
-
-                                },
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = {confirmPassword = it},
+                        label = { Text(stringResource(R.string.confirm_password)) },
+                        singleLine = true,
+                        isError = confirmPassword.isNotEmpty() && !viewModel.isValidConfirmPassword(password, confirmPassword),
+                        visualTransformation = if (isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Password,
+                                contentDescription = stringResource(R.string.confirm_password),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        trailingIcon = {
+                            val image = if (isConfirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                            IconButton(onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible }) {
+                                Icon(imageVector = image, contentDescription = stringResource(R.string.confirm_password),
+                                    tint = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {},
@@ -212,33 +177,28 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                             contentColor = colorResource(R.color.white)
                         )
                     ) {
-                        Text(stringResource(R.string.login))
+                        Text(stringResource(R.string.register))
                     }
                     Spacer(Modifier.height(16.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
-                    ) { Text(text = stringResource(R.string.new_user),
+                    ) { Text(text = "Already Have An Account?",
                         color = colorResource(R.color.black),
                         modifier = Modifier.padding(end = 4.dp),
                         fontWeight = FontWeight.Bold
                     )
-                        Text(text = stringResource(R.string.register),
+                        Text(text = stringResource(R.string.login),
                             color = colorResource(R.color.purple_700),
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable{navController.navigate("register")}
+                            modifier = Modifier.clickable{
+                                navController.navigate("login")
+                            }
                         )
                     }
                 }
             }
         }
     }
-}
-
-@Composable
-@Preview(showSystemUi = true)
-fun LoginPreview(){
-    val navController = rememberNavController()
-    LoginView(navController, navController)
 }

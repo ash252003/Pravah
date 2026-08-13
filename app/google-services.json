@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1093761763014",
+    "project_id": "pravah-a9b39",
+    "storage_bucket": "pravah-a9b39.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1093761763014:android:d5f51a92f9566f9acf39c7",
+        "android_client_info": {
+          "package_name": "com.example.pravah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnc2y2YjuHRL7cdHlUxeRrW-y91_VlW7w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
