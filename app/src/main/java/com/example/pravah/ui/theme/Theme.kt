@@ -9,35 +9,112 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val PravahLightColorScheme = lightColorScheme(
+    primary = LeafGreen500,
+    onPrimary = PureWhite,
+    primaryContainer = LeafGreen100,
+    onPrimaryContainer = LeafGreen700,
+
+    secondary = OceanBlue500,
+    onSecondary = PureWhite,
+    secondaryContainer = SkyCyan200,
+    onSecondaryContainer = OceanBlue700,
+
+    tertiary = SkyCyan500,
+    onTertiary = NavyDeep,
+    tertiaryContainer = LimeGreen200,
+    onTertiaryContainer = LeafGreen700,
+
+    background = OffWhite,
+    onBackground = SlateGray700,
+
+    surface = PureWhite,
+    onSurface = SlateGray700,
+    surfaceVariant = CloudGray100,
+    onSurfaceVariant = SlateGray500,
+
+    outline = CloudGray100,
+    outlineVariant = SlateGray500,
+
+    error = ErrorRed500,
+    onError = PureWhite,
+    errorContainer = ErrorRed100,
+    onErrorContainer = ErrorRed500,
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+private val PravahDarkColorScheme = darkColorScheme(
+    primary = LeafGreen500,
+    onPrimary = NavyDeep,
+    primaryContainer = LeafGreen700,
+    onPrimaryContainer = LeafGreen100,
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    secondary = SkyCyan500,
+    onSecondary = NavyDeep,
+    secondaryContainer = OceanBlue700,
+    onSecondaryContainer = SkyCyan200,
+
+    tertiary = LimeGreen500,
+    onTertiary = NavyDeep,
+    tertiaryContainer = SolarBlue700,
+    onTertiaryContainer = LimeGreen200,
+
+    background = NavyDeep,
+    onBackground = OffWhite,
+
+    surface = CharcoalSurface,
+    onSurface = OffWhite,
+    surfaceVariant = NavyMedium,
+    onSurfaceVariant = SkyCyan200,
+
+    outline = NavyMedium,
+    outlineVariant = SlateGray500,
+
+    error = ErrorRed500,
+    onError = NavyDeep,
+    errorContainer = ErrorRed100,
+    onErrorContainer = ErrorRed500,
 )
+
+data class PravahExtendedColors(
+    val solarBlue: androidx.compose.ui.graphics.Color,   // Icon tint for solar/grid-specific features, distinct data-viz series color
+    val limeGreen: androidx.compose.ui.graphics.Color,    // Secondary progress-bar fill, gradient stop, "trending up" indicators
+    val warningAmber: androidx.compose.ui.graphics.Color, // Non-critical warning banners/snackbars
+    // The signature "P" swirl gradient: Navy -> Ocean Blue -> Sky Cyan -> Leaf Green -> Lime.
+    // USE FOR: splash screen background, onboarding hero header, top-of-screen
+    // decorative band on the dashboard — anywhere you want an unmistakable,
+    // full-strength brand moment. Do NOT use behind body text (contrast varies).
+    val heroGradient: Brush,
+)
+
+private val LocalPravahExtendedColors = staticCompositionLocalOf {
+    PravahExtendedColors(
+        solarBlue = SolarBlue700,
+        limeGreen = LimeGreen500,
+        warningAmber = WarningAmber500,
+        heroGradient = Brush.linearGradient(listOf(NavyDeep, OceanBlue500, SkyCyan500, LeafGreen500, LimeGreen500)),
+    )
+}
+
+object PravahTheme {
+    val extendedColors: PravahExtendedColors
+        @Composable
+        get() = LocalPravahExtendedColors.current
+}
 
 @Composable
-fun PravahTheme(
+fun PravahAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -45,14 +122,35 @@ fun PravahTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> PravahDarkColorScheme
+        else -> PravahLightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
+    val extendedColors = PravahExtendedColors(
+        solarBlue = SolarBlue700,
+        limeGreen = LimeGreen500,
+        warningAmber = WarningAmber500,
+        heroGradient = Brush.linearGradient(
+            colors = listOf(NavyDeep, OceanBlue500, SkyCyan500, LeafGreen500, LimeGreen500),
+            start = Offset(0f, 0f),
+            end = Offset.Infinite,
+        ),
     )
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = colorScheme.background.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
+    }
+
+    CompositionLocalProvider(LocalPravahExtendedColors provides extendedColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = PravahTypography, // defined in Type.kt
+            content = content
+        )
+    }
 }
