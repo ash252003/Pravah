@@ -65,13 +65,20 @@ import com.example.pravah.viewmodel.UserViewModel
 @Composable
 fun LoginView(navController: NavController, rootNavController: NavController, viewModel: AuthViewModel = viewModel(),
               userViewModel: UserViewModel = viewModel()){
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
+    val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+    if (isLoggedIn){
+        rootNavController.navigate("user_home") {
+            popUpTo("login") { inclusive = true }
+        }
+    }
     LaunchedEffect(Unit) {
         userViewModel.getAllInstitution()
     }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     var selectedInstitution by remember { mutableStateOf("") }
     val institution = userViewModel.institute

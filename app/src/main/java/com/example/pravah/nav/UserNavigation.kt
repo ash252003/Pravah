@@ -57,11 +57,12 @@ import com.example.pravah.R
 import com.example.pravah.model.DrawerItem
 import kotlinx.coroutines.launch
 import androidx.core.content.edit
+import com.example.pravah.view.institution.ManageStaff
 
 @SuppressLint("CommitPrefEdits")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserNavigation() {
+fun UserNavigation(rootNavController: NavController) {
 
     val navController = rememberNavController()
     val instituteItems = listOf(
@@ -81,9 +82,13 @@ fun UserNavigation() {
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                navigationIcon = {
-                    IconButton(onClick = { expanded = !expanded }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                actions = {
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "More options",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                     DropdownMenu(
                         expanded = expanded,
@@ -92,8 +97,15 @@ fun UserNavigation() {
                         DropdownMenuItem(
                             text = { Text("Logout") },
                             onClick = {
+                                expanded = false
                                 sharedPreferences.edit {
-                                    clear().apply()
+                                    clear()
+                                }
+                                rootNavController.navigate("auth") {
+                                    popUpTo("user_home") {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
                                 }
                             }
                         )
@@ -102,7 +114,7 @@ fun UserNavigation() {
             )
         },
         bottomBar = {
-            if(userType == "institution"){
+            if(userType == "admin"){
                 val currentRoute =
                     navController.currentBackStackEntryAsState().value?.destination?.route
                 NavigationBar {
@@ -152,7 +164,7 @@ fun UserNavigation() {
                 // ManageClassroomScreen()
             }
             composable("manage_staff") {
-                // ManageStaffScreen()
+                ManageStaff()
             }
         }
     }
