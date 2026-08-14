@@ -29,7 +29,7 @@ fun cardComposable(
             modifier = Modifier
                 .padding(10.dp)
                 .height(20.dp)
-                .fillMaxHeight(0.1f)
+                .fillMaxHeight(0.2f)
                 .fillMaxWidth(0.9f)
                 .wrapContentHeight(),
             onClick = {},
