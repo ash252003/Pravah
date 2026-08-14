@@ -23,6 +23,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,11 +35,14 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pravah.R
@@ -46,94 +52,76 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserNavigation(rootNavController: NavController) {
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-    val navController = rememberNavController()
-    val instituteItem = listOf(
-        DrawerItem("Device Status", "device_status", Icons.Default.Sensors),
-        DrawerItem("Monitor Occupancy", "monitor_occupancy", Icons.Default.MeetingRoom),
-        DrawerItem("Manage Classroom", "manage_classroom", Icons.Default.Class),
-        DrawerItem("Manage Staff", "manage_staff", Icons.Default.ManageAccounts),
-        DrawerItem("Control Manually", "control_manually", Icons.Default.ControlCamera)
-    )
-    val staffItem = listOf(
-        DrawerItem("Device Status", "device_status", Icons.Default.Sensors),
-        DrawerItem("Monitor Occupancy", "monitor_occupancy", Icons.Default.MeetingRoom),
-        DrawerItem("Control Manually", "control_manually", Icons.Default.ControlCamera)
-    )
-    val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
-    val userType = sharedPreferences.getString("user_type", null)
-    val item = if (userType == "staff") staffItem else instituteItem
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-    ModalNavigationDrawer(
-        drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.width(300.dp),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
 
-                    Spacer(Modifier.height(16.dp))
-                    item.forEach { item ->
-                        NavigationDrawerItem(
-                            label = { Text(item.title) },
-                            selected = currentRoute == item.route,
-                            onClick = {
-                                navController.navigate(item.route){
-                                    popUpTo("user_home")
-                                    launchSingleTop = true
+    val navController = rememberNavController()
+
+    val bottomItems = listOf(
+        DrawerItem("Rooms", "room_list", Icons.Default.MeetingRoom),
+        DrawerItem("Manage Classrooms", "manage_classroom", Icons.Default.Class),
+        DrawerItem("Staff", "manage_staff", Icons.Default.ManageAccounts)
+    )
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                colors = topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        },
+
+        bottomBar = {
+            val currentRoute =
+                navController.currentBackStackEntryAsState().value?.destination?.route
+            NavigationBar {
+                bottomItems.forEach { item ->
+                    NavigationBarItem(
+                        selected = currentRoute == item.route,
+                        onClick = {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = true
                                 }
-                                scope.launch {
-                                    drawerState.close()
-                                }
-                            },
-                            icon = {
-                                Icon(item.icon, contentDescription = "Menu Item")
-                            },
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.title
+                            )
+                        },
+                        label = {
+                            Text(item.title)
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color.Black,
+                            unselectedIconColor = Color.Gray,
+                            unselectedTextColor = Color.Gray,
+                            indicatorColor = MaterialTheme.colorScheme.primary
                         )
-                    }
+                    )
                 }
             }
-        },
-        drawerState = drawerState
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("CourtInsight") },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch {
-                                if (drawerState.isClosed) {
-                                    drawerState.open()
-                                } else {
-                                    drawerState.close()
-                                }
-                            }
-                        }) {
-                            Icon(
-                                Icons.Default.Menu,
-                                contentDescription = "Menu",
-                                tint = colorResource(R.color.white)
-                            )
-                        }
-                    },
-                    colors = topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        titleContentColor = colorResource(R.color.white)
-                    )
-                )
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "room_list",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("room_list") {
+                // RoomListScreen()
             }
-        ) { innerPadding ->
-            NavHost(
-                navController = navController,
-                startDestination = "home",
-                modifier = Modifier.padding(innerPadding)
-            ) {
+            composable("manage_classroom") {
+                // ManageClassroomScreen()
+            }
+            composable("manage_staff") {
+                // ManageStaffScreen()
             }
         }
     }

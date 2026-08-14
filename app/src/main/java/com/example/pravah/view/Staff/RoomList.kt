@@ -28,7 +28,5 @@ fun RoomList(rooms: List<RoomModel>){
 @Preview
 @Composable
 fun PreviewRoomList(){
-    RoomList(
-        room = RoomModel()
-    )
+
 }
