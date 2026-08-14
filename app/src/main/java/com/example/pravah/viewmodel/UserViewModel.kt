@@ -71,4 +71,15 @@ class UserViewModel(private val repo: UserModel = UserModel()): ViewModel() {
             isLoading = false
         }
     }
+
+    fun deleteStaff(email: String, institutionName: String, onSuccess: () -> Unit){
+        viewModelScope.launch {
+            val success = repo.deleteStaff(email)
+            if (success){
+                onSuccess()
+            } else {
+                _toastMessage.emit("Failed to Delete")
+            }
+        }
+    }
 }

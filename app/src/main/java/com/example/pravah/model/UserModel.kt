@@ -178,4 +178,24 @@ class UserModel {
             return emptyList()
         }
     }
+
+    suspend fun deleteStaff(email: String): Boolean {
+        return try {
+            val query = firestore.collection("staff")
+                .whereEqualTo("email", email)
+                .get()
+                .await()
+            if (!query.isEmpty) {
+                query.documents.forEach { document ->
+                    document.reference.delete().await()
+                }
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("Firestore", "Error deleting staff: ${e.message}")
+            false
+        }
+    }
 }

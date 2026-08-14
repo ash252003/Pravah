@@ -26,9 +26,12 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -57,6 +60,7 @@ import com.example.pravah.viewmodel.UserViewModel
 @Composable
 fun ManageStaff(viewModel: UserViewModel = viewModel(), authViewModel: AuthViewModel = viewModel()) {
     var showAddStaffDialog by remember { mutableStateOf(false) }
+    var expandedMenu by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
     val instituteName = sharedPreferences.getString("name", "")
@@ -121,21 +125,21 @@ fun ManageStaff(viewModel: UserViewModel = viewModel(), authViewModel: AuthViewM
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    ElevatedCard(
-                        elevation = CardDefaults.cardElevation(6.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.background
-                        )
+                    Column(
+                        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            staff.forEach { staff ->
+                        staff.forEach { staff ->
+                            ElevatedCard(
+                                elevation = CardDefaults.cardElevation(6.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.background
+                                )
+                            ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth().wrapContentHeight()
@@ -156,15 +160,37 @@ fun ManageStaff(viewModel: UserViewModel = viewModel(), authViewModel: AuthViewM
                                         modifier = Modifier.weight(0.5f),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.MoreVert,
-                                            contentDescription = "More options",
-                                            tint = MaterialTheme.colorScheme.secondary
-                                        )
+                                        IconButton(
+                                            onClick = {
+                                                expandedMenu = staff.email
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.MoreVert,
+                                                contentDescription = "More options"
+                                            )
+                                        }
+                                        DropdownMenu(
+                                            expanded = expandedMenu == staff.email,
+                                            onDismissRequest = {
+                                                expandedMenu = null
+                                            }
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = { Text("Delete", color = Color.Red) },
+                                                onClick = {
+                                                    expandedMenu = null
+                                                    // Delete staff
+                                                    viewModel.deleteStaff(staff.email, instituteName.toString()){
+                                                        viewModel.getAllStaff(instituteName.toString())
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(10.dp))
                             }
+                            Spacer(modifier = Modifier.height(10.dp))
                         }
                     }
                 }
@@ -267,6 +293,7 @@ fun ManageStaff(viewModel: UserViewModel = viewModel(), authViewModel: AuthViewM
                                         instituteName = instituteName.toString(),
                                     ){
                                         Toast.makeText(context, "Staff Added", Toast.LENGTH_SHORT).show()
+                                        viewModel.getAllStaff(instituteName.toString())
                                         showAddStaffDialog = false
                                         authViewModel.sendEmailScope(email, password){}
                                     }

@@ -91,7 +91,7 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
 
                 val json = """
                 {
-                    "email": "$email",
+                    "to": "$email",
                     "subject": "Password",
                     "message": "Your Password for Pravah is: $password"
                 }
@@ -106,7 +106,6 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
 
                 val client = OkHttpClient()
                 val response = client.newCall(request).execute()
-
                 response.body?.string()
 
             } catch (e: Exception) {
