@@ -23,16 +23,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.pravah.model.RoomModel
+import com.example.pravah.model.DeviceModel
 import com.example.pravah.ui.theme.PravahAppTheme
 
-
 @Composable
-fun cardComposable(
-    room: RoomModel,
-    onClick: () -> Unit = {}
-) {
-    val isActive = room.status.equals("Active", ignoreCase = true)
+fun DeviceCard(onClick:()-> Unit= {}, device: DeviceModel){
+    val isActive = device.status.equals("Working", ignoreCase = true)
+    val isOn = device.powerStatus.equals("ON", ignoreCase = true)
 
     ElevatedCard(
         onClick = onClick,
@@ -73,35 +70,35 @@ fun cardComposable(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "Room ${room.roomNo}",
+                    text = "Room ${device.deviceName}",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Status: ${room.status}",
+                    text = "Status: ${device.status}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            StatusPill(isActive = isActive, label = room.status)
+            StatusPill(isOn = isOn, label = device.powerStatus)
         }
     }
 }
 
 @Composable
-private fun StatusPill(isActive: Boolean, label: String) {
-    val containerColor = if (isActive) {
+private fun StatusPill(isOn: Boolean, label: String?) {
+    val containerColor = if (isOn) {
         MaterialTheme.colorScheme.primaryContainer
     } else {
         MaterialTheme.colorScheme.surfaceVariant
     }
-    val contentColor = if (isActive) {
+    val contentColor = if (isOn) {
         MaterialTheme.colorScheme.onPrimaryContainer
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
-    val dotColor = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray
+    val dotColor = if (isOn) MaterialTheme.colorScheme.primary else Color.Gray
 
     Row(
         modifier = Modifier
@@ -115,26 +112,22 @@ private fun StatusPill(isActive: Boolean, label: String) {
                 .size(8.dp)
                 .background(color = dotColor, shape = CircleShape)
         )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = contentColor
+        if (label != null) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = contentColor
+            )
+        }
+    }
+
+}
+@Preview
+@Composable
+fun DeviceCardPreview(){
+    PravahAppTheme {
+        DeviceCard(
+            device = DeviceModel("AirConditioner1","Working","ON")
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun RoomCardPreviewActive() {
-    PravahAppTheme {
-        cardComposable(room = RoomModel(roomNo = 101.toString(), status = "Active"))
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun RoomCardPreviewInactive() {
-    PravahAppTheme {
-        cardComposable(room = RoomModel(roomNo = 204.toString(), status = "Inactive"))
     }
 }
