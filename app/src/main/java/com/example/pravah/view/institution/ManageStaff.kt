@@ -131,14 +131,14 @@ fun ManageStaff(viewModel: UserViewModel = viewModel(), authViewModel: AuthViewM
                         )
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
                             staff.forEach { staff ->
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth()
+                                        .fillMaxWidth().wrapContentHeight()
                                         .padding(horizontal = 16.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -268,6 +268,7 @@ fun ManageStaff(viewModel: UserViewModel = viewModel(), authViewModel: AuthViewM
                                     ){
                                         Toast.makeText(context, "Staff Added", Toast.LENGTH_SHORT).show()
                                         showAddStaffDialog = false
+                                        authViewModel.sendEmailScope(email, password){}
                                     }
                                 } else {
                                     Toast.makeText(context, "Please fill all fields correctly", Toast.LENGTH_SHORT).show()

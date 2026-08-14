@@ -10,6 +10,13 @@ android {
         version = release(37)
     }
 
+    packaging{
+        resources{
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/NOTICE.md"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.pravah"
         minSdk = 24
@@ -46,6 +53,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation("com.sun.mail:android-mail:1.6.6")
+    implementation("com.sun.mail:android-activation:1.6.7")
     implementation("androidx.core:core-splashscreen:1.0.0")
     implementation(platform("com.google.firebase:firebase-bom:34.17.0"))
     implementation("io.coil-kt:coil-compose:2.6.0")

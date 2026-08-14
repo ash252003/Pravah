@@ -1,5 +1,6 @@
 package com.example.pravah.viewmodel
 
+import android.util.Log
 import android.util.Patterns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,9 +8,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pravah.model.UserModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
 
@@ -19,6 +26,8 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
         private set
 
     var isLoginLoading by mutableStateOf(false)
+        private set
+    var isPasswordLoading by mutableStateOf(false)
         private set
     fun isValidEmail(email: String): Boolean{
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -73,6 +82,46 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
     fun checkEmail(email: String, onResult: (Boolean) -> Unit){
         viewModelScope.launch {
             onResult(repo.checkEmail(email))
+        }
+    }
+
+    suspend fun sendEmail(email: String, password: String): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+
+                val json = """
+                {
+                    "email": "$email",
+                    "subject": "Password",
+                    "message": "Your Password for Pravah is: $password"
+                }
+                """.trimIndent()
+
+                val body = json.toRequestBody("application/json".toMediaType())
+
+                val request = Request.Builder()
+                    .url("https://courtinsight-email-api.onrender.com/send-email")
+                    .post(body)
+                    .build()
+
+                val client = OkHttpClient()
+                val response = client.newCall(request).execute()
+
+                response.body?.string()
+
+            } catch (e: Exception) {
+                Log.e("Error", "Error sending email: ${e.message}")
+                null
+            }
+        }
+    }
+
+    fun sendEmailScope(email: String, password: String, onResult: (String?) -> Unit){
+        viewModelScope.launch {
+            isPasswordLoading = true
+            val pass = sendEmail(email, password)
+            isPasswordLoading = false
+            onResult(pass)
         }
     }
 }
