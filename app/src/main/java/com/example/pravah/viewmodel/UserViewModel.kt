@@ -24,7 +24,7 @@ class UserViewModel(private val repo: UserModel = UserModel()): ViewModel() {
             isLoading = false
         }
     }
-    fun getRoomsByInstitution(institutionId: String) {
+    fun getRoomsByStaff(institutionId: String) {
 
         viewModelScope.launch {
 

@@ -1,5 +1,6 @@
 package com.example.pravah.nav
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,8 +15,11 @@ import androidx.compose.material.icons.filled.ControlCamera
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.MeetingRoom
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -33,7 +37,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -48,19 +56,23 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pravah.R
 import com.example.pravah.model.DrawerItem
 import kotlinx.coroutines.launch
+import androidx.core.content.edit
 
+@SuppressLint("CommitPrefEdits")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserNavigation(rootNavController: NavController) {
+fun UserNavigation() {
 
     val navController = rememberNavController()
-
-    val bottomItems = listOf(
+    val instituteItems = listOf(
         DrawerItem("Rooms", "room_list", Icons.Default.MeetingRoom),
         DrawerItem("Manage Classrooms", "manage_classroom", Icons.Default.Class),
         DrawerItem("Staff", "manage_staff", Icons.Default.ManageAccounts)
     )
-
+    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
+    val userType = sharedPreferences.getString("user_type", "")
     Scaffold(
         topBar = {
             TopAppBar(
@@ -68,43 +80,62 @@ fun UserNavigation(rootNavController: NavController) {
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Logout") },
+                            onClick = {
+                                sharedPreferences.edit {
+                                    clear().apply()
+                                }
+                            }
+                        )
+                    }
+                }
             )
         },
-
         bottomBar = {
-            val currentRoute =
-                navController.currentBackStackEntryAsState().value?.destination?.route
-            NavigationBar {
-                bottomItems.forEach { item ->
-                    NavigationBarItem(
-                        selected = currentRoute == item.route,
-                        onClick = {
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
+            if(userType == "institution"){
+                val currentRoute =
+                    navController.currentBackStackEntryAsState().value?.destination?.route
+                NavigationBar {
+                    instituteItems.forEach { item ->
+                        NavigationBarItem(
+                            selected = currentRoute == item.route,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = item.title
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.title
+                                )
+                            },
+                            label = {
+                                Text(item.title)
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color.White,
+                                selectedTextColor = Color.Black,
+                                unselectedIconColor = Color.Gray,
+                                unselectedTextColor = Color.Gray,
+                                indicatorColor = MaterialTheme.colorScheme.primary
                             )
-                        },
-                        label = {
-                            Text(item.title)
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color.White,
-                            selectedTextColor = Color.Black,
-                            unselectedIconColor = Color.Gray,
-                            unselectedTextColor = Color.Gray,
-                            indicatorColor = MaterialTheme.colorScheme.primary
                         )
-                    )
+                    }
                 }
             }
         }

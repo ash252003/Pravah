@@ -28,5 +28,26 @@ fun RoomList(rooms: List<RoomModel>){
 @Preview
 @Composable
 fun PreviewRoomList(){
-
+    RoomList(
+        rooms = listOf(
+            RoomModel(
+                id = "1",
+                institutionId = "ABC123",
+                roomNo = "701",
+                status = "working"
+            ),
+            RoomModel(
+                id = "2",
+                institutionId = "ABC123",
+                roomNo = "702",
+                status = "working"
+            ),
+            RoomModel(
+                id = "3",
+                institutionId = "ABC123",
+                roomNo = "703",
+                status = "damaged"
+            )
+        )
+    )
 }

@@ -216,7 +216,7 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                         onClick = {
                             if(viewModel.isValidEmail(email) && viewModel.isValidPassword(password)){
                                 viewModel.checkLogin(selectedInstitution, email, password){ userType ->
-                                    //saveLogin(context, userType.toString(), selectedInstitution, email)
+                                    saveLogin(context, userType.toString(), selectedInstitution, email)
                                     rootNavController.navigate("user_home"){
                                         popUpTo("auth"){inclusive = true}
                                     }
