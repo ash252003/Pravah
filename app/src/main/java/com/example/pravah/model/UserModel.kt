@@ -111,4 +111,51 @@ class UserModel {
             return emptyList()
         }
     }
+    suspend fun getRoomsByInstitution(
+        institutionId: String
+    ): List<RoomModel> {
+
+        return try {
+
+            val querySnapshot = firestore
+                .collection("room")
+                .whereEqualTo("institution_id", institutionId)
+                .get()
+                .await()
+
+            querySnapshot.documents.map { document ->
+
+                val devices = document
+                    .get("devices") as? List<Map<String, Any>>
+                    ?: emptyList()
+
+                val deviceList = devices.map { device ->
+
+                    DeviceModel(
+                        deviceName = device["deviceName"] as? String ?: "",
+                        status = device["status"] as? String ?: "working",
+                        powerStatus = device["powerStatus"] as? String
+                    )
+                }
+
+                RoomModel(
+                    id = document.id,
+                    institutionId = document.getString("institution_id") ?: "",
+                    roomNo = document.getString("room_no") ?: "",
+                    devices = deviceList,
+                    status = document.getString("status") ?: "working"
+                )
+            }
+
+        } catch (e: Exception) {
+
+            Log.e(
+                "Room",
+                "Error getting rooms: ${e.message}",
+                e
+            )
+
+            emptyList()
+        }
+    }
 }

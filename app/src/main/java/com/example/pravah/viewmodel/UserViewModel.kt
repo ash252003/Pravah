@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pravah.model.DataModel
+import com.example.pravah.model.RoomModel
 import com.example.pravah.model.UserModel
 import kotlinx.coroutines.launch
 
@@ -14,10 +15,23 @@ class UserViewModel(private val repo: UserModel = UserModel()): ViewModel() {
         private set
     var institute by mutableStateOf<List<DataModel>>(emptyList())
         private set
+    var rooms by mutableStateOf<List<RoomModel>>(emptyList())
+        private set
     fun getAllInstitution() {
         viewModelScope.launch {
             isLoading = true
             institute = repo.getAllInstitution()
+            isLoading = false
+        }
+    }
+    fun getRoomsByInstitution(institutionId: String) {
+
+        viewModelScope.launch {
+
+            isLoading = true
+
+            rooms = repo.getRoomsByInstitution(institutionId)
+
             isLoading = false
         }
     }
