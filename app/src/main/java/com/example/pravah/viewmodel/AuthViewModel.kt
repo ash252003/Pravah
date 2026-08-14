@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pravah.model.UserModel
+import com.example.pravah.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -17,6 +18,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.util.concurrent.TimeUnit
 
 class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
 
@@ -88,24 +90,35 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
     suspend fun sendEmail(email: String, password: String): String? {
         return withContext(Dispatchers.IO) {
             try {
-
                 val json = """
-                {
-                    "to": "$email",
-                    "subject": "Password",
-                    "message": "Your Password for Pravah is: $password"
-                }
-                """.trimIndent()
+        {
+            "to": "$email",
+            "subject": "Password",
+            "message": "Your Password for Pravah is: $password"
+        }
+        """.trimIndent()
 
                 val body = json.toRequestBody("application/json".toMediaType())
 
                 val request = Request.Builder()
                     .url("https://courtinsight-email-api.onrender.com/send-email")
+                    .addHeader("X-API-KEY", BuildConfig.MAILER_API_KEY)
                     .post(body)
                     .build()
 
-                val client = OkHttpClient()
+                val client = OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .build()
+
                 val response = client.newCall(request).execute()
+
+                if (!response.isSuccessful) {
+                    Log.e("Error", "Email send failed: ${response.code} ${response.body?.string()}")
+                    return@withContext null
+                }
+
                 response.body?.string()
 
             } catch (e: Exception) {
