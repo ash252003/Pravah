@@ -25,3 +25,9 @@ data class DrawerItem(
     val route: String,
     val icon: ImageVector
 )
+
+data class staffDetails(
+    val id: String,
+    val name: String,
+    val email: String
+)

@@ -68,6 +68,11 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
     val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+    LaunchedEffect(Unit) {
+        viewModel.toastMessage.collect{ msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        }
+    }
     if (isLoggedIn){
         rootNavController.navigate("user_home") {
             popUpTo("login") { inclusive = true }
@@ -224,10 +229,10 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                             if(viewModel.isValidEmail(email) && viewModel.isValidPassword(password)){
                                 viewModel.checkLogin(selectedInstitution, email, password){ userType ->
                                     saveLogin(context, userType.toString(), selectedInstitution, email)
+                                    Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
                                     rootNavController.navigate("user_home"){
                                         popUpTo("auth"){inclusive = true}
                                     }
-                                    Toast.makeText(context, "Login Successfully", Toast.LENGTH_SHORT).show()
                                 }
                             } else {
                                 Toast.makeText(context, "Please fill all fields correctly", Toast.LENGTH_SHORT).show()

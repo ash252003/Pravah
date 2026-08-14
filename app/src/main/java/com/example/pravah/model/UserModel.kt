@@ -27,12 +27,13 @@ class UserModel {
         }
     }
 
-    suspend fun addStaff(name: String, email: String, password: String): Boolean{
+    suspend fun addStaff(name: String, email: String, password: String, instituteName: String): Boolean{
         try {
             val user = mapOf(
                 "name" to name,
                 "email" to email,
                 "password" to password,
+                "institution_name" to instituteName,
                 "user_type" to "staff"
             )
             val collectionRef = firestore.collection("staff")
@@ -156,6 +157,25 @@ class UserModel {
             )
 
             emptyList()
+        }
+    }
+
+    suspend fun getAllStaff(institutionName: String): List<staffDetails>{
+        val staffDetail = mutableListOf<staffDetails>()
+        try {
+            val collectionRef = firestore.collection("staff")
+            val querySnapshot = collectionRef.get().await()
+            for(document in querySnapshot.documents){
+                val id = document.id
+                val name = document.getString("name") ?: ""
+                val email = document.getString("email") ?: ""
+                val staff = staffDetails(id, name, email)
+                staffDetail.add(staff)
+            }
+            return staffDetail
+        } catch (e: Exception){
+            Log.e("Error", "Error Getting Institution: ${e.message}")
+            return emptyList()
         }
     }
 }
