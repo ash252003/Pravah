@@ -1,6 +1,7 @@
 package com.example.pravah.model
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -91,5 +92,23 @@ class UserModel {
             Log.e("Error", "Error checking email: ${e.message}")
         }
         return false
+    }
+
+    suspend fun getAllInstitution(): List<DataModel>{
+        val institution = mutableListOf<DataModel>()
+        try {
+            val collectionRef = firestore.collection("institution")
+            val querySnapshot = collectionRef.get().await()
+            for(document in querySnapshot.documents){
+                val id = document.id
+                val name = document.getString("institution_name") ?: ""
+                val institute = DataModel(id, name)
+                institution.add(institute)
+            }
+            return institution
+        } catch (e: Exception){
+            Log.e("Error", "Error Getting Institution: ${e.message}")
+            return emptyList()
+        }
     }
 }

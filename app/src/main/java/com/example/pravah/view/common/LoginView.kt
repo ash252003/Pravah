@@ -1,5 +1,6 @@
 package com.example.pravah.view.common
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -36,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,22 +53,28 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.pravah.R
 import com.example.pravah.viewmodel.AuthViewModel
+import com.example.pravah.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginView(navController: NavController, rootNavController: NavController, viewModel: AuthViewModel = viewModel()){
+fun LoginView(navController: NavController, rootNavController: NavController, viewModel: AuthViewModel = viewModel(),
+              userViewModel: UserViewModel = viewModel()){
+    LaunchedEffect(Unit) {
+        userViewModel.getAllInstitution()
+    }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     var selectedInstitution by remember { mutableStateOf("") }
-    var institution = listOf<String>()
+    val institution = userViewModel.institute
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -138,10 +146,10 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
 
                                 DropdownMenuItem(
                                     text = {
-                                        Text(institution)
+                                        Text(institution.institution)
                                     },
                                     onClick = {
-                                        selectedInstitution = institution
+                                        selectedInstitution = institution.institution
                                         expanded = false
                                     }
                                 )
@@ -208,7 +216,10 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                         onClick = {
                             if(viewModel.isValidEmail(email) && viewModel.isValidPassword(password)){
                                 viewModel.checkLogin(selectedInstitution, email, password){ userType ->
-
+                                    //saveLogin(context, userType.toString(), selectedInstitution, email)
+                                    rootNavController.navigate("user_home"){
+                                        popUpTo("auth"){inclusive = true}
+                                    }
                                 }
                             } else {
                                 Toast.makeText(context, "Please fill all fields correctly", Toast.LENGTH_SHORT).show()
@@ -242,6 +253,17 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                 }
             }
         }
+    }
+}
+
+fun saveLogin(context: Context, userType: String, name: String, email: String){
+    val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
+    sharedPreferences.edit {
+        putBoolean("isLoggedIn", true)
+        putString("user_type", userType)
+        putString("name", name)
+        putString("email", email)
+        apply()
     }
 }
 

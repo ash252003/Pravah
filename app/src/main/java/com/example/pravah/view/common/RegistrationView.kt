@@ -95,7 +95,7 @@ fun RegistrationView(navController: NavController, viewModel: AuthViewModel = vi
                     )
                     OutlinedTextField(
                         value = name,
-                        onValueChange = {},
+                        onValueChange = {name = it},
                         label = { Text(stringResource(R.string.institution_name)) },
                         singleLine = true,
                         isError = name.isNotEmpty() && !viewModel.isValidName(name),
@@ -110,7 +110,7 @@ fun RegistrationView(navController: NavController, viewModel: AuthViewModel = vi
                     Spacer(Modifier.height(16.dp))
                     OutlinedTextField(
                         value = email,
-                        onValueChange = {},
+                        onValueChange = {email = it},
                         label = { Text(stringResource(R.string.email)) },
                         singleLine = true,
                         isError = email.isNotEmpty() && !viewModel.isValidEmail(email),

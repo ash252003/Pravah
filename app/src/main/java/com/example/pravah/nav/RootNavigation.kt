@@ -15,5 +15,8 @@ fun RootNavigation(){
         composable("auth") {
             AppNavigation(navController)
         }
+        composable("user_home") {
+            UserNavigation(navController)
+        }
     }
 }
