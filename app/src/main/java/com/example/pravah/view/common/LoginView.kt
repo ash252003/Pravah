@@ -220,6 +220,7 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                                     rootNavController.navigate("user_home"){
                                         popUpTo("auth"){inclusive = true}
                                     }
+                                    Toast.makeText(context, "Login Successfully", Toast.LENGTH_SHORT).show()
                                 }
                             } else {
                                 Toast.makeText(context, "Please fill all fields correctly", Toast.LENGTH_SHORT).show()
