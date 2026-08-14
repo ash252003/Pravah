@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation("androidx.core:core-splashscreen:1.0.0")
     implementation(platform("com.google.firebase:firebase-bom:34.17.0"))
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("androidx.compose.material3:material3:1.2.1")
