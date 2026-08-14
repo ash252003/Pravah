@@ -1,5 +1,6 @@
 package com.example.pravah.view.common
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -204,7 +205,15 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
-                        onClick = {},
+                        onClick = {
+                            if(viewModel.isValidEmail(email) && viewModel.isValidPassword(password)){
+                                viewModel.checkLogin(selectedInstitution, email, password){ userType ->
+
+                                }
+                            } else {
+                                Toast.makeText(context, "Please fill all fields correctly", Toast.LENGTH_SHORT).show()
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = Shapes().medium,
                         colors = ButtonDefaults.buttonColors(
