@@ -30,6 +30,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pravah.Components.Classroom
+import com.example.pravah.model.DeviceModel
 import com.example.pravah.model.RoomModel
 import com.example.pravah.viewmodel.AuthViewModel
 import com.example.pravah.viewmodel.ClassViewModel
@@ -49,7 +51,7 @@ import com.example.pravah.viewmodel.ClassViewModel
 @Composable
 fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: AuthViewModel = viewModel()) {
     val context = LocalContext.current
-    var showAddStaffDialog by remember { mutableStateOf(false) }
+    var showAddRoomDialog by remember { mutableStateOf(false) }
     val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
     val instituteId = sharedPreferences.getString("instituteId", "")
     LaunchedEffect(Unit) {
@@ -80,7 +82,7 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
             ) {
                 ExtendedFloatingActionButton(
                     onClick = {
-                        showAddStaffDialog = true
+                        showAddRoomDialog = true
                     },
                     icon = {
                         Icon(
@@ -88,19 +90,26 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                             contentDescription = "Add Button"
                         )
                     },
-                    text = { Text("Add Staff") },
+                    text = { Text("Add Class") },
                     contentColor = Color.White,
                     containerColor = MaterialTheme.colorScheme.primary,
                 )
             }
         }
     }
-    if (showAddStaffDialog) {
+    if (showAddRoomDialog) {
+
         var roomNo by remember { mutableStateOf("") }
-        var email by remember { mutableStateOf("") }
+        var roomStatus by remember { mutableStateOf("empty") }
+        var deviceCount by remember { mutableStateOf(1) }
+
+        val deviceNames = remember {
+            mutableStateListOf("")
+        }
+
         Dialog(
             onDismissRequest = {
-                showAddStaffDialog = false
+                showAddRoomDialog = false
             }
         ) {
             Card(
@@ -109,58 +118,152 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                     .padding(16.dp),
                 shape = RoundedCornerShape(16.dp)
             ) {
+
                 Column(
-                    modifier = Modifier.padding(20.dp).width(250.dp)
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .width(300.dp)
                 ) {
+
                     Text(
-                        text = "Add Staff",
+                        text = "Add Classroom",
                         style = MaterialTheme.typography.headlineSmall
                     )
+
                     Spacer(modifier = Modifier.height(20.dp))
+
+                    // Room Number
                     OutlinedTextField(
                         value = roomNo,
-                        onValueChange = { roomNo = it },
-                        label = { Text("Name") },
+                        onValueChange = {
+                            roomNo = it
+                        },
+                        label = {
+                            Text("Room Number")
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                        isError = roomNo.isNotEmpty() && !authViewModel.isValidName(roomNo),
                         singleLine = true
                     )
+
                     Spacer(modifier = Modifier.height(12.dp))
+
+                    // Device count
                     OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Email") },
+                        value = deviceCount.toString(),
+                        onValueChange = {
+                            val count = it.toIntOrNull()
+
+                            if (count != null && count > 0) {
+                                deviceCount = count
+
+                                while (deviceNames.size < count) {
+                                    deviceNames.add("")
+                                }
+
+                                while (deviceNames.size > count) {
+                                    deviceNames.removeAt(deviceNames.lastIndex)
+                                }
+                            }
+                        },
+                        label = {
+                            Text("Number of Devices")
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                        isError = email.isNotEmpty() && !authViewModel.isValidEmail(email),
                         singleLine = true
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Device fields
+                    deviceNames.forEachIndexed { index, deviceName ->
+
+                        OutlinedTextField(
+                            value = deviceName,
+                            onValueChange = {
+                                deviceNames[index] = it
+                            },
+                            label = {
+                                Text("ESP ID ${index + 1}")
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
+
                         TextButton(
                             onClick = {
-                                showAddStaffDialog = false
+                                showAddRoomDialog = false
                             }
                         ) {
                             Text("Cancel")
                         }
+
                         Spacer(modifier = Modifier.width(8.dp))
+
                         Button(
                             onClick = {
-                                if (authViewModel.isValidName(roomNo) && authViewModel.isValidEmail(email)){
-//                                    viewModel.addRoom(
-//                                        institutionId = instituteId.toString(),
-//                                        roomNo = roomNo,
-//                                        devices = TODO(),
-//                                    ){
-//                                        Toast.makeText(context, "Room Added", Toast.LENGTH_SHORT).show()
-//                                        viewModel.getRoomsByInstitute(instituteId.toString())
-//                                        showAddStaffDialog = false
-//                                    }
-                                } else {
-                                    Toast.makeText(context, "Please fill all fields correctly", Toast.LENGTH_SHORT).show()
+                                if (
+                                    roomNo.isBlank() ||
+                                    deviceNames.any { it.isBlank() }
+                                ) {
+                                    Toast.makeText(
+                                        context,
+                                        "Please fill all fields",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    return@Button
+                                }
+
+                                val devices = deviceNames.map { espId ->
+
+                                    DeviceModel(
+                                        id = "",
+                                        classId = "",
+                                        deviceName = espId,
+                                        status = "working",
+                                        powerStatus = null
+                                    )
+                                }
+
+                                viewModel.addRoom(
+                                    institutionId = instituteId.toString(),
+                                    roomNo = roomNo,
+                                    roomStatus = "empty",
+                                    devices = devices
+                                ) { success ->
+
+                                    if (success) {
+
+                                        Toast.makeText(
+                                            context,
+                                            "Room Added Successfully",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                        viewModel.getRoomsByInstitute(
+                                            instituteId.toString()
+                                        )
+
+                                        showAddRoomDialog = false
+
+                                    } else {
+
+                                        Toast.makeText(
+                                            context,
+                                            "Failed to add room",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }
                             }
                         ) {
