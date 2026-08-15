@@ -81,7 +81,7 @@ class ClassroomModel {
                 }
                 RoomModel(
                     id = classId,
-                    institutionId = document.getString("institution_id") ?: "",
+                    institutionId = document.getString("institute_id") ?: "",
                     roomNo = document.getString("roomNo") ?: "",
                     devices = deviceList,
                     status = document.getString("room_status") ?: "active"
