@@ -39,12 +39,12 @@ class UserViewModel(private val repo: UserModel = UserModel()): ViewModel() {
         name: String,
         email: String,
         password: String,
-        instituteName: String,
+        instituteId: String,
         onSuccess: () -> Unit
     ){
         viewModelScope.launch {
             isStaffLoading = true
-            val result = repo.addStaff(name, email, password, instituteName)
+            val result = repo.addStaff(name, email, password, instituteId)
             isStaffLoading = false
             if(result){
                 onSuccess()

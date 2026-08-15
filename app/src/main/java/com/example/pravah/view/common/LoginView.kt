@@ -1,6 +1,7 @@
 package com.example.pravah.view.common
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable

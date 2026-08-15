@@ -63,9 +63,9 @@ fun ManageStaff(viewModel: UserViewModel = viewModel(), authViewModel: AuthViewM
     var expandedMenu by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
-    val instituteName = sharedPreferences.getString("name", "")
+    val instituteId = sharedPreferences.getString("instituteId", "")
     LaunchedEffect(Unit) {
-        viewModel.getAllStaff(instituteName.toString())
+        viewModel.getAllStaff(instituteId.toString())
     }
     LaunchedEffect(Unit) {
         viewModel.toastMessage.collect{ msg ->
@@ -181,8 +181,8 @@ fun ManageStaff(viewModel: UserViewModel = viewModel(), authViewModel: AuthViewM
                                                 onClick = {
                                                     expandedMenu = null
                                                     // Delete staff
-                                                    viewModel.deleteStaff(staff.email, instituteName.toString()){
-                                                        viewModel.getAllStaff(instituteName.toString())
+                                                    viewModel.deleteStaff(staff.email, instituteId.toString()){
+                                                        viewModel.getAllStaff(instituteId.toString())
                                                     }
                                                 }
                                             )
@@ -290,10 +290,10 @@ fun ManageStaff(viewModel: UserViewModel = viewModel(), authViewModel: AuthViewM
                                         name = name.trim(),
                                         email = email.trim(),
                                         password = password,
-                                        instituteName = instituteName.toString(),
+                                        instituteId = instituteId.toString(),
                                     ){
                                         Toast.makeText(context, "Staff Added", Toast.LENGTH_SHORT).show()
-                                        viewModel.getAllStaff(instituteName.toString())
+                                        viewModel.getAllStaff(instituteId.toString())
                                         showAddStaffDialog = false
                                         authViewModel.sendEmailScope(email, password){}
                                     }

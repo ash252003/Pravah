@@ -10,7 +10,7 @@ class ClassroomModel {
     suspend fun addClassWithDevices(
         institutionId: String,
         roomNo: String,
-        roomStatus: String = "active",
+        roomStatus: String = "empty",
         devices: List<DeviceModel>
     ): Boolean {
         return try {
@@ -32,7 +32,7 @@ class ClassroomModel {
                     .document()
                 val deviceData = hashMapOf(
                     "classId" to classroomRef.id,
-                    "deviceName" to device.deviceName,
+                    "espId" to device.deviceName,
                     "status" to device.status,
                     "powerStatus" to device.powerStatus
                 )

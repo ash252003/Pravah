@@ -27,13 +27,13 @@ class UserModel {
         }
     }
 
-    suspend fun addStaff(name: String, email: String, password: String, instituteName: String): Boolean{
+    suspend fun addStaff(name: String, email: String, password: String, instituteId: String): Boolean{
         try {
             val user = mapOf(
                 "name" to name,
                 "email" to email,
                 "password" to password,
-                "institution_name" to instituteName,
+                "institute_id" to instituteId,
                 "user_type" to "staff"
             )
             val collectionRef = firestore.collection("staff")
@@ -119,7 +119,7 @@ class UserModel {
         return try {
             val querySnapshot = firestore
                 .collection("staff")
-                .whereEqualTo("institution_id", institutionId)
+                .whereEqualTo("institute_id", institutionId)
                 .get()
                 .await()
             querySnapshot.documents.map { document ->
@@ -143,7 +143,7 @@ class UserModel {
         return try {
             val query = firestore.collection("staff")
                 .whereEqualTo("email", email)
-                .whereEqualTo("institution_id", institutionId)
+                .whereEqualTo("institute_id", institutionId)
                 .get()
                 .await()
             if (!query.isEmpty) {
