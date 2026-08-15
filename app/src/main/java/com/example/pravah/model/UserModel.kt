@@ -112,77 +112,38 @@ class UserModel {
             return emptyList()
         }
     }
-    suspend fun getRoomsByInstitution(
+
+    suspend fun getAllStaff(
         institutionId: String
-    ): List<RoomModel> {
-
+    ): List<staffDetails> {
         return try {
-
             val querySnapshot = firestore
-                .collection("room")
+                .collection("staff")
                 .whereEqualTo("institution_id", institutionId)
                 .get()
                 .await()
-
             querySnapshot.documents.map { document ->
-
-                val devices = document
-                    .get("devices") as? List<Map<String, Any>>
-                    ?: emptyList()
-
-                val deviceList = devices.map { device ->
-
-                    DeviceModel(
-                        deviceName = device["deviceName"] as? String ?: "",
-                        status = device["status"] as? String ?: "working",
-                        powerStatus = device["powerStatus"] as? String
-                    )
-                }
-
-                RoomModel(
+                staffDetails(
                     id = document.id,
-                    institutionId = document.getString("institution_id") ?: "",
-                    roomNo = document.getString("room_no") ?: "",
-                    devices = deviceList,
-                    status = document.getString("status") ?: "working"
+                    name = document.getString("name") ?: "",
+                    email = document.getString("email") ?: ""
                 )
             }
-
         } catch (e: Exception) {
-
             Log.e(
-                "Room",
-                "Error getting rooms: ${e.message}",
+                "Staff",
+                "Error getting staff: ${e.message}",
                 e
             )
-
             emptyList()
         }
     }
 
-    suspend fun getAllStaff(institutionName: String): List<staffDetails>{
-        val staffDetail = mutableListOf<staffDetails>()
-        try {
-            val collectionRef = firestore.collection("staff")
-            val querySnapshot = collectionRef.get().await()
-            for(document in querySnapshot.documents){
-                val id = document.id
-                val name = document.getString("name") ?: ""
-                val email = document.getString("email") ?: ""
-                val staff = staffDetails(id, name, email)
-                staffDetail.add(staff)
-            }
-            return staffDetail
-        } catch (e: Exception){
-            Log.e("Error", "Error Getting Institution: ${e.message}")
-            return emptyList()
-        }
-    }
-
-    suspend fun deleteStaff(email: String): Boolean {
+    suspend fun deleteStaff(email: String, institutionId: String): Boolean {
         return try {
             val query = firestore.collection("staff")
                 .whereEqualTo("email", email)
+                .whereEqualTo("institution_id", institutionId)
                 .get()
                 .await()
             if (!query.isEmpty) {
@@ -196,6 +157,26 @@ class UserModel {
         } catch (e: Exception) {
             Log.e("Firestore", "Error deleting staff: ${e.message}")
             false
+        }
+    }
+
+    suspend fun getInstitutionIdByName(instituteName: String): String? {
+        return try {
+            val querySnapshot = firestore
+                .collection("institution")
+                .whereEqualTo("institution_name", instituteName)
+                .limit(1)
+                .get()
+                .await()
+            val document = querySnapshot.documents.firstOrNull()
+            document?.id
+        } catch (e: Exception) {
+            Log.e(
+                "Firestore",
+                "Error Getting InstitutionId: ${e.message}",
+                e
+            )
+            null
         }
     }
 }

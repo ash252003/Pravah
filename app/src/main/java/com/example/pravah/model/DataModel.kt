@@ -15,6 +15,8 @@ data class RoomModel(
 )
 
 data class DeviceModel(
+    val id: String,
+    val classId: String,
     val deviceName: String = "",
     val status: String = "working",
     val powerStatus: String? = null

@@ -1,5 +1,6 @@
 package com.example.pravah.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -33,17 +34,6 @@ class UserViewModel(private val repo: UserModel = UserModel()): ViewModel() {
             isLoading = false
         }
     }
-    fun getRoomsByStaff(institutionId: String) {
-
-        viewModelScope.launch {
-
-            isLoading = true
-
-            rooms = repo.getRoomsByInstitution(institutionId)
-
-            isLoading = false
-        }
-    }
 
     fun addStaff(
         name: String,
@@ -64,21 +54,35 @@ class UserViewModel(private val repo: UserModel = UserModel()): ViewModel() {
         }
     }
 
-    fun getAllStaff(institutionName: String) {
+    fun getAllStaff(institutionId: String) {
         viewModelScope.launch {
             isLoading = true
-            staff = repo.getAllStaff(institutionName)
+            staff = repo.getAllStaff(institutionId)
             isLoading = false
         }
     }
 
-    fun deleteStaff(email: String, institutionName: String, onSuccess: () -> Unit){
+    fun deleteStaff(email: String, institutionId: String, onSuccess: () -> Unit){
         viewModelScope.launch {
-            val success = repo.deleteStaff(email)
+            val success = repo.deleteStaff(email, institutionId)
             if (success){
                 onSuccess()
             } else {
                 _toastMessage.emit("Failed to Delete")
+            }
+        }
+    }
+
+    fun getInstitutionId(
+        instituteName: String,
+        onSuccess: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val institutionId = repo.getInstitutionIdByName(instituteName)
+            if (institutionId != null) {
+                onSuccess(institutionId)
+            } else {
+                Log.e("Institution", "Institution not found")
             }
         }
     }

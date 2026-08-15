@@ -228,10 +228,12 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                         onClick = {
                             if(viewModel.isValidEmail(email) && viewModel.isValidPassword(password)){
                                 viewModel.checkLogin(selectedInstitution, email, password){ userType ->
-                                    saveLogin(context, userType.toString(), selectedInstitution, email)
-                                    Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-                                    rootNavController.navigate("user_home"){
-                                        popUpTo("auth"){inclusive = true}
+                                    userViewModel.getInstitutionId(selectedInstitution){ id ->
+                                        saveLogin(context, userType.toString(), selectedInstitution, email, id)
+                                        Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                                        rootNavController.navigate("user_home"){
+                                            popUpTo("auth"){inclusive = true}
+                                        }
                                     }
                                 }
                             } else {
@@ -269,13 +271,14 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
     }
 }
 
-fun saveLogin(context: Context, userType: String, name: String, email: String){
+fun saveLogin(context: Context, userType: String, name: String, email: String, id: String){
     val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
     sharedPreferences.edit {
         putBoolean("isLoggedIn", true)
         putString("user_type", userType)
         putString("name", name)
         putString("email", email)
+        putString("instituteId", id)
         apply()
     }
 }
