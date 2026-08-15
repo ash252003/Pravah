@@ -29,6 +29,7 @@ class ClassViewModel(private val repo: ClassroomModel = ClassroomModel()): ViewM
     fun addRoom(
         institutionId: String,
         roomNo: String,
+        roomStatus: String,
         devices: List<DeviceModel>,
         onSuccess: (Boolean) -> Unit
     ) {
@@ -38,6 +39,7 @@ class ClassViewModel(private val repo: ClassroomModel = ClassroomModel()): ViewM
                 val success = repo.addClassWithDevices(
                     institutionId = institutionId,
                     roomNo = roomNo,
+                    roomStatus = roomStatus,
                     devices = devices
                 )
                 onSuccess(success)

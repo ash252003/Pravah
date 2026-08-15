@@ -7,10 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pravah.model.UserModel
-<<<<<<< Updated upstream
-=======
-import kotlinx.coroutines.Dispatchers
->>>>>>> Stashed changes
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -18,7 +14,6 @@ import android.util.Log
 import com.example.pravah.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-<<<<<<< Updated upstream
 import java.util.Properties
 import javax.mail.Message
 import javax.mail.PasswordAuthentication
@@ -26,12 +21,10 @@ import javax.mail.Session
 import javax.mail.Transport
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
-=======
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
->>>>>>> Stashed changes
 
 class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
 
@@ -103,7 +96,6 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
     suspend fun sendEmail(toEmail: String, password: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-<<<<<<< Updated upstream
                 val props = Properties().apply {
                     put("mail.smtp.auth", "true")
                     put("mail.smtp.starttls.enable", "true")
@@ -119,11 +111,9 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
                         )
                     }
                 })
-=======
-
                 val json = """
                 {
-                    "email": "$email",
+                    "email": "$toEmail",
                     "subject": "Password",
                     "message": "Your Password for Pravah is: $password"
                 }
@@ -140,7 +130,6 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
                 val response = client.newCall(request).execute()
 
                 response.body?.string()
->>>>>>> Stashed changes
 
                 val message = MimeMessage(session).apply {
                     setFrom(InternetAddress(BuildConfig.GMAIL_ADDRESS))

@@ -1,6 +1,7 @@
 package com.example.pravah.model
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -114,7 +115,7 @@ class UserModel {
 
     suspend fun getAllStaff(
         institutionId: String
-    ): List<staffDetails> {
+    ): List<StaffDetails> {
         return try {
             val querySnapshot = firestore
                 .collection("staff")
@@ -122,7 +123,7 @@ class UserModel {
                 .get()
                 .await()
             querySnapshot.documents.map { document ->
-                staffDetails(
+                StaffDetails(
                     id = document.id,
                     name = document.getString("name") ?: "",
                     email = document.getString("email") ?: ""
@@ -138,30 +139,7 @@ class UserModel {
         }
     }
 
-<<<<<<< Updated upstream
     suspend fun deleteStaff(email: String, institutionId: String): Boolean {
-=======
-    suspend fun getAllStaff(institutionName: String): List<StaffDetails>{
-        val staffDetail = mutableListOf<StaffDetails>()
-        try {
-            val collectionRef = firestore.collection("staff")
-            val querySnapshot = collectionRef.get().await()
-            for(document in querySnapshot.documents){
-                val id = document.id
-                val name = document.getString("name") ?: ""
-                val email = document.getString("email") ?: ""
-                val staff = StaffDetails(id, name, email)
-                staffDetail.add(staff)
-            }
-            return staffDetail
-        } catch (e: Exception){
-            Log.e("Error", "Error Getting Institution: ${e.message}")
-            return emptyList()
-        }
-    }
-
-    suspend fun deleteStaff(email: String): Boolean {
->>>>>>> Stashed changes
         return try {
             val query = firestore.collection("staff")
                 .whereEqualTo("email", email)
