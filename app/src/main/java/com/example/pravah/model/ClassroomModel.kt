@@ -97,4 +97,45 @@ class ClassroomModel {
             emptyList()
         }
     }
+
+    suspend fun deleteRoom(roomId: String): Boolean {
+        return try {
+
+            val batch = firestore.batch()
+
+            // Delete classroom
+            val roomRef = firestore
+                .collection("classroom")
+                .document(roomId)
+
+            batch.delete(roomRef)
+
+            // Find all devices belonging to this classroom
+            val deviceSnapshot = firestore
+                .collection("devices")
+                .whereEqualTo("classId", roomId)
+                .get()
+                .await()
+
+            // Delete all devices
+            for (document in deviceSnapshot.documents) {
+                batch.delete(document.reference)
+            }
+
+            // Commit all deletions
+            batch.commit().await()
+
+            true
+
+        } catch (e: Exception) {
+
+            Log.e(
+                "Firestore",
+                "Error deleting room: ${e.message}",
+                e
+            )
+
+            false
+        }
+    }
 }

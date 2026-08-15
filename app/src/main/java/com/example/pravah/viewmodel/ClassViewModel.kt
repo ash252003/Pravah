@@ -55,4 +55,38 @@ class ClassViewModel(private val repo: ClassroomModel = ClassroomModel()): ViewM
             }
         }
     }
+
+    fun deleteRoom(
+        roomId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                isLoading = true
+
+                val success = repo.deleteRoom(roomId)
+
+                if (success) {
+                    Log.d("Room", "Room deleted successfully")
+                } else {
+                    Log.e("Room", "Failed to delete room")
+                }
+
+                onResult(success)
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    "Room",
+                    "Error deleting room: ${e.message}",
+                    e
+                )
+
+                onResult(false)
+
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 }

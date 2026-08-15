@@ -32,11 +32,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Classroom(roomNo: String) {
-    var expandedMenu by remember { mutableStateOf<String?>(null) }
+fun Classroom(
+    roomId: String,
+    roomNo: String,
+    onDelete: (String) -> Unit
+) {
+    var expandedMenu by remember { mutableStateOf(false) }
+
     ElevatedCard(
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 4.dp
+        ),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -51,6 +58,7 @@ fun Classroom(roomNo: String) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -72,39 +80,44 @@ fun Classroom(roomNo: String) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "Room ${roomNo}",
+                    text = "Room $roomNo",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            IconButton(
-                onClick = {
-                    expandedMenu = roomNo
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More"
-                )
-            }
-
-            DropdownMenu(
-                expanded = expandedMenu == roomNo,
-                onDismissRequest = {
-                    expandedMenu = null
-                }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Delete", color = Color.Red) },
+            Box {
+                IconButton(
                     onClick = {
-                        expandedMenu = null
-                        // Delete staff
-
+                        expandedMenu = true
                     }
-                )
-            }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "More"
+                    )
+                }
 
+                DropdownMenu(
+                    expanded = expandedMenu,
+                    onDismissRequest = {
+                        expandedMenu = false
+                    }
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = "Delete",
+                                color = Color.Red
+                            )
+                        },
+                        onClick = {
+                            expandedMenu = false
+                            onDelete(roomId)
+                        }
+                    )
+                }
+            }
         }
     }
 }
@@ -112,5 +125,9 @@ fun Classroom(roomNo: String) {
 @Preview(showSystemUi = true)
 @Composable
 fun ClassroomPreview() {
-    Classroom("")
+    Classroom(
+        roomId = "room123",
+        roomNo = "106",
+        onDelete = {}
+    )
 }
