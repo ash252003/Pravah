@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.pravah.model.DataModel
 import com.example.pravah.model.RoomModel
 import com.example.pravah.model.UserModel
-import com.example.pravah.model.staffDetails
+import com.example.pravah.model.StaffDetails
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -23,7 +23,7 @@ class UserViewModel(private val repo: UserModel = UserModel()): ViewModel() {
         private set
     var institute by mutableStateOf<List<DataModel>>(emptyList())
         private set
-    var staff by mutableStateOf<List<staffDetails>>(emptyList())
+    var staff by mutableStateOf<List<StaffDetails>>(emptyList())
         private set
     var rooms by mutableStateOf<List<RoomModel>>(emptyList())
         private set

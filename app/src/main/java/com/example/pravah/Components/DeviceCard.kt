@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MeetingRoom
+import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -27,7 +27,7 @@ import com.example.pravah.model.DeviceModel
 import com.example.pravah.ui.theme.PravahAppTheme
 
 @Composable
-fun DeviceCard(onClick:()-> Unit= {}, device: DeviceModel){
+fun DeviceCard(onClick: () -> Unit = {}, device: DeviceModel) {
     val isActive = device.status.equals("Working", ignoreCase = true)
     val isOn = device.powerStatus.equals("ON", ignoreCase = true)
 
@@ -53,15 +53,23 @@ fun DeviceCard(onClick:()-> Unit= {}, device: DeviceModel){
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
+                        color = if (isActive) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.errorContainer
+                        },
                         shape = RoundedCornerShape(14.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.MeetingRoom,
+                    imageVector = Icons.Filled.Devices,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    tint = if (isActive) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onErrorContainer
+                    }
                 )
             }
 
@@ -70,7 +78,7 @@ fun DeviceCard(onClick:()-> Unit= {}, device: DeviceModel){
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "Room ${device.deviceName}",
+                    text = device.deviceName, // was "Room ${device.deviceName}" — leftover from RoomCard copy-paste
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -81,24 +89,34 @@ fun DeviceCard(onClick:()-> Unit= {}, device: DeviceModel){
                 )
             }
 
-            StatusPill(isOn = isOn, label = device.powerStatus)
+            StatusPill(isOn = isOn, label = device.powerStatus, isActive = isActive)
         }
     }
 }
 
 @Composable
-private fun StatusPill(isOn: Boolean, label: String?) {
+private fun StatusPill(isOn: Boolean, label: String?, isActive: Boolean) {
+    // Power state (isOn) decides the base color; health (isActive) tints it
+    // when the device is actually drawing power — an OFF device stays
+    // neutral regardless of health, since a damaged-but-off device isn't
+    // an active concern the same way damaged-but-on is.
     val containerColor = if (isOn) {
-        MaterialTheme.colorScheme.primaryContainer
+        if (isActive) MaterialTheme.colorScheme.primaryContainer
+        else MaterialTheme.colorScheme.errorContainer
     } else {
         MaterialTheme.colorScheme.surfaceVariant
     }
     val contentColor = if (isOn) {
-        MaterialTheme.colorScheme.onPrimaryContainer
+        if (isActive) MaterialTheme.colorScheme.onPrimaryContainer
+        else MaterialTheme.colorScheme.onErrorContainer
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
-    val dotColor = if (isOn) MaterialTheme.colorScheme.primary else Color.Gray
+    val dotColor = if (isOn) {
+        if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+    } else {
+        Color.Gray
+    }
 
     Row(
         modifier = Modifier
@@ -120,14 +138,35 @@ private fun StatusPill(isOn: Boolean, label: String?) {
             )
         }
     }
-
 }
-@Preview
+
+@Preview(showBackground = true)
 @Composable
-fun DeviceCardPreview(){
+private fun DeviceCardPreview() {
     PravahAppTheme {
         DeviceCard(
-            device = DeviceModel("AirConditioner1","Working","ON")
+            device = DeviceModel("AirConditioner1", "Working", "ON")
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DeviceCardDamagedOnPreview() {
+    PravahAppTheme {
+        // Damaged but still drawing power — the case the old code couldn't distinguish
+        DeviceCard(
+            device = DeviceModel("AirConditioner2", "Damaged", "ON")
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DeviceCardErrorPreview() {
+    PravahAppTheme {
+        DeviceCard(
+            device = DeviceModel("AirConditioner3", "Damaged", "OFF")
         )
     }
 }

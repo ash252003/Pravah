@@ -28,7 +28,7 @@ data class DrawerItem(
     val icon: ImageVector
 )
 
-data class staffDetails(
+data class StaffDetails(
     val id: String,
     val name: String,
     val email: String
