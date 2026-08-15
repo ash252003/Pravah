@@ -1,5 +1,6 @@
 package com.example.pravah.viewmodel
 
+import android.util.Log
 import android.util.Patterns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,31 +8,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pravah.model.UserModel
-<<<<<<< Updated upstream
-=======
 import kotlinx.coroutines.Dispatchers
->>>>>>> Stashed changes
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import android.util.Log
-import com.example.pravah.BuildConfig
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-<<<<<<< Updated upstream
-import java.util.Properties
-import javax.mail.Message
-import javax.mail.PasswordAuthentication
-import javax.mail.Session
-import javax.mail.Transport
-import javax.mail.internet.InternetAddress
-import javax.mail.internet.MimeMessage
-=======
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
->>>>>>> Stashed changes
 
 class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
 
@@ -100,26 +85,9 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
         }
     }
 
-    suspend fun sendEmail(toEmail: String, password: String): Boolean {
+    suspend fun sendEmail(email: String, password: String): String? {
         return withContext(Dispatchers.IO) {
             try {
-<<<<<<< Updated upstream
-                val props = Properties().apply {
-                    put("mail.smtp.auth", "true")
-                    put("mail.smtp.starttls.enable", "true")
-                    put("mail.smtp.host", "smtp.gmail.com")
-                    put("mail.smtp.port", "587")
-                }
-
-                val session = Session.getInstance(props, object : javax.mail.Authenticator() {
-                    override fun getPasswordAuthentication(): PasswordAuthentication {
-                        return PasswordAuthentication(
-                            BuildConfig.GMAIL_ADDRESS,
-                            BuildConfig.GMAIL_APP_PASSWORD
-                        )
-                    }
-                })
-=======
 
                 val json = """
                 {
@@ -140,31 +108,20 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
                 val response = client.newCall(request).execute()
 
                 response.body?.string()
->>>>>>> Stashed changes
 
-                val message = MimeMessage(session).apply {
-                    setFrom(InternetAddress(BuildConfig.GMAIL_ADDRESS))
-                    setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
-                    subject = "Password"
-                    setText("Your Password for Pravah is: $password")
-                }
-
-                Transport.send(message)
-                true
             } catch (e: Exception) {
-                Log.e("Error", "Direct email send failed: ${e.message}")
-                Log.d("DebugAuth", "Using email: ${BuildConfig.GMAIL_ADDRESS}, pass length: ${BuildConfig.GMAIL_APP_PASSWORD.length}")
-                false
+                Log.e("Error", "Error sending email: ${e.message}")
+                null
             }
         }
     }
 
-    fun sendEmailScope(email: String, password: String, onResult: (Boolean) -> Unit){
+    fun sendEmailScope(email: String, password: String, onResult: (String?) -> Unit){
         viewModelScope.launch {
             isPasswordLoading = true
-            val success = sendEmail(email, password)
+            val pass = sendEmail(email, password)
             isPasswordLoading = false
-            onResult(success)
+            onResult(pass)
         }
     }
 }

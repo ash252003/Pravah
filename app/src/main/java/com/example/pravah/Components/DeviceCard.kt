@@ -96,10 +96,7 @@ fun DeviceCard(onClick: () -> Unit = {}, device: DeviceModel) {
 
 @Composable
 private fun StatusPill(isOn: Boolean, label: String?, isActive: Boolean) {
-    // Power state (isOn) decides the base color; health (isActive) tints it
-    // when the device is actually drawing power — an OFF device stays
-    // neutral regardless of health, since a damaged-but-off device isn't
-    // an active concern the same way damaged-but-on is.
+
     val containerColor = if (isOn) {
         if (isActive) MaterialTheme.colorScheme.primaryContainer
         else MaterialTheme.colorScheme.errorContainer
@@ -138,6 +135,7 @@ private fun StatusPill(isOn: Boolean, label: String?, isActive: Boolean) {
             )
         }
     }
+
 }
 
 @Preview(showBackground = true)

@@ -57,7 +57,9 @@ import com.example.pravah.R
 import com.example.pravah.model.DrawerItem
 import kotlinx.coroutines.launch
 import androidx.core.content.edit
-import com.example.pravah.view.institution.ManageClassroom
+import com.example.pravah.view.Staff.DeviceInfo
+import com.example.pravah.view.Staff.RoomInfo
+import com.example.pravah.view.Staff.RoomList
 import com.example.pravah.view.institution.ManageStaff
 
 @SuppressLint("CommitPrefEdits")
@@ -159,13 +161,19 @@ fun UserNavigation(rootNavController: NavController) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("room_list") {
-                // RoomListScreen()
+                //RoomList()
             }
             composable("manage_classroom") {
-                ManageClassroom()
+                // ManageClassroomScreen()
             }
             composable("manage_staff") {
                 ManageStaff()
+            }
+            composable ("roomInfo"){
+                //RoomInfo()
+            }
+            composable ("deviceInfo"){
+                //DeviceInfo()
             }
         }
     }
