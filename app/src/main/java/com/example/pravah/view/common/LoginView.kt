@@ -130,10 +130,10 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                             onValueChange = {},
                             readOnly = true,
                             label = {
-                                Text("Select Institution")
+                                Text("Select Institute")
                             },
                             placeholder = {
-                                Text("Choose Institution")
+                                Text("Choose Institute")
                             },
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
