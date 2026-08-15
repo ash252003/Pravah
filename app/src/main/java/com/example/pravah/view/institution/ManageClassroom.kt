@@ -72,10 +72,17 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                         Classroom(
                             roomId = room.id,
                             roomNo = room.roomNo,
+                            deviceCount = room.devices.size,
                             onDelete = { roomId ->
-                                viewModel.deleteRoom(roomId){
-                                    viewModel.getRoomsByInstitute(instituteId.toString())
-                                    Toast.makeText(context, "Room Deleted Successfully", Toast.LENGTH_SHORT).show()
+                                viewModel.deleteRoom(roomId) {
+                                    viewModel.getRoomsByInstitute(
+                                        instituteId.toString()
+                                    )
+                                    Toast.makeText(
+                                        context,
+                                        "Room Deleted Successfully",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                         )
@@ -230,7 +237,7 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                             Button(
                                 onClick = {
                                     if (
-                                        roomNo.isBlank() &&
+                                        roomNo.isBlank() ||
                                         deviceNames.any { it.isBlank() }
                                     ) {
                                         Toast.makeText(

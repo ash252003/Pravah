@@ -93,9 +93,13 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
         }
     }
 
-    suspend fun sendEmail(toEmail: String, password: String): Boolean {
+    suspend fun sendEmail(
+        toEmail: String,
+        password: String
+    ): Boolean {
         return withContext(Dispatchers.IO) {
             try {
+
                 val props = Properties().apply {
                     put("mail.smtp.auth", "true")
                     put("mail.smtp.starttls.enable", "true")
@@ -103,46 +107,54 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
                     put("mail.smtp.port", "587")
                 }
 
-                val session = Session.getInstance(props, object : javax.mail.Authenticator() {
-                    override fun getPasswordAuthentication(): PasswordAuthentication {
-                        return PasswordAuthentication(
-                            BuildConfig.GMAIL_ADDRESS,
-                            BuildConfig.GMAIL_APP_PASSWORD
-                        )
+                val session = Session.getInstance(
+                    props,
+                    object : javax.mail.Authenticator() {
+                        override fun getPasswordAuthentication(): PasswordAuthentication {
+                            return PasswordAuthentication(
+                                BuildConfig.GMAIL_ADDRESS,
+                                BuildConfig.GMAIL_APP_PASSWORD
+                            )
+                        }
                     }
-                })
-                val json = """
-                {
-                    "email": "$toEmail",
-                    "subject": "Password",
-                    "message": "Your Password for Pravah is: $password"
-                }
-                """.trimIndent()
-
-                val body = json.toRequestBody("application/json".toMediaType())
-
-                val request = Request.Builder()
-                    .url("https://courtinsight-email-api.onrender.com/send-email")
-                    .post(body)
-                    .build()
-
-                val client = OkHttpClient()
-                val response = client.newCall(request).execute()
-
-                response.body?.string()
-
+                )
                 val message = MimeMessage(session).apply {
-                    setFrom(InternetAddress(BuildConfig.GMAIL_ADDRESS))
-                    setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
-                    subject = "Password"
-                    setText("Your Password for Pravah is: $password")
-                }
+                    setFrom(
+                        InternetAddress(BuildConfig.GMAIL_ADDRESS)
+                    )
+                    setRecipients(
+                        Message.RecipientType.TO,
+                        InternetAddress.parse(toEmail)
+                    )
+                    subject = "Pravah - Account Password"
 
+                    setText(
+                        """
+                    Hello,
+                    
+                    Your password for Pravah is:
+                    
+                    $password
+                 
+                    Please keep your password secure.
+                    
+                    Regards,
+                    Pravah Team
+                    """.trimIndent()
+                    )
+                }
                 Transport.send(message)
+                Log.d(
+                    "Email",
+                    "Email sent successfully to $toEmail"
+                )
                 true
             } catch (e: Exception) {
-                Log.e("Error", "Direct email send failed: ${e.message}")
-                Log.d("DebugAuth", "Using email: ${BuildConfig.GMAIL_ADDRESS}, pass length: ${BuildConfig.GMAIL_APP_PASSWORD.length}")
+                Log.e(
+                    "Email",
+                    "Direct email send failed",
+                    e
+                )
                 false
             }
         }
