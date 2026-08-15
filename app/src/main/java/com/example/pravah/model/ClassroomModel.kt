@@ -74,7 +74,7 @@ class ClassroomModel {
                     DeviceModel(
                         id = deviceDocument.id,
                         classId = classId,
-                        deviceName = deviceDocument.getString("deviceName") ?: "",
+                        deviceName = deviceDocument.getString("espId") ?: "",
                         status = deviceDocument.getString("status") ?: "working",
                         powerStatus = deviceDocument.getString("powerStatus")
                     )
@@ -135,6 +135,68 @@ class ClassroomModel {
                 e
             )
 
+            false
+        }
+    }
+
+    suspend fun editRoom(
+        roomId: String,
+        roomNo: String,
+        devices: List<DeviceModel>
+    ): Boolean {
+
+        return try {
+
+            val batch = firestore.batch()
+
+            // Update classroom
+            val roomRef = firestore
+                .collection("classroom")
+                .document(roomId)
+
+            batch.update(
+                roomRef,
+                "roomNo",
+                roomNo
+            )
+
+            // Get existing devices
+            val deviceSnapshot = firestore
+                .collection("devices")
+                .whereEqualTo("classId", roomId)
+                .get()
+                .await()
+            // Delete existing devices
+            for (document in deviceSnapshot.documents) {
+                batch.delete(document.reference)
+            }
+            // Add updated devices
+            for (device in devices) {
+
+                val deviceRef = firestore
+                    .collection("devices")
+                    .document()
+
+                val deviceData = hashMapOf(
+                    "classId" to roomId,
+                    "espId" to device.deviceName,
+                    "status" to device.status,
+                    "powerStatus" to device.powerStatus
+                )
+
+                batch.set(
+                    deviceRef,
+                    deviceData
+                )
+            }
+            batch.commit().await()
+            true
+        } catch (e: Exception) {
+            Log.e(
+                "Firestore",
+                "Error editing classroom",
+                e
+            )
             false
         }
     }

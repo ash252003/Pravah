@@ -233,7 +233,9 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                                         saveLogin(context, userType.toString(), selectedInstitution, email, id)
                                         Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
                                         rootNavController.navigate("user_home"){
-                                            popUpTo("auth"){inclusive = true}
+                                            popUpTo("auth"){
+                                                inclusive = true
+                                            }
                                         }
                                     }
                                 }

@@ -89,4 +89,47 @@ class ClassViewModel(private val repo: ClassroomModel = ClassroomModel()): ViewM
             }
         }
     }
+
+    fun editRoom(
+        roomId: String,
+        roomNo: String,
+        devices: List<DeviceModel>,
+        institutionId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+
+            try {
+
+                isLoading = true
+
+                val success = repo.editRoom(
+                    roomId = roomId,
+                    roomNo = roomNo,
+                    devices = devices
+                )
+
+                if (success) {
+
+                    getRoomsByInstitute(institutionId)
+                }
+
+                onResult(success)
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    "Room",
+                    "Error editing room",
+                    e
+                )
+
+                onResult(false)
+
+            } finally {
+
+                isLoading = false
+            }
+        }
+    }
 }

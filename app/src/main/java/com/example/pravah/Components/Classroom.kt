@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MeetingRoom
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CardDefaults
@@ -37,6 +39,7 @@ fun Classroom(
     roomId: String,
     roomNo: String,
     deviceCount: Int,
+    onEdit: (String) -> Unit,
     onDelete: (String) -> Unit
 ) {
     var expandedMenu by remember {
@@ -66,7 +69,6 @@ fun Classroom(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // Classroom icon
             Box(
                 modifier = Modifier
                     .size(54.dp)
@@ -88,7 +90,6 @@ fun Classroom(
                 modifier = Modifier.width(16.dp)
             )
 
-            // Room information
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -109,7 +110,6 @@ fun Classroom(
                 )
             }
 
-            // More menu
             Box {
 
                 IconButton(
@@ -131,7 +131,33 @@ fun Classroom(
                     }
                 ) {
 
+                    // EDIT
                     DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null,
+                                tint = Color.Black
+                            )
+                        },
+                        text = {
+                            Text("Edit")
+                        },
+                        onClick = {
+                            expandedMenu = false
+                            onEdit(roomId)
+                        }
+                    )
+
+                    // DELETE
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = Color.Red
+                            )
+                        },
                         text = {
                             Text(
                                 text = "Delete",

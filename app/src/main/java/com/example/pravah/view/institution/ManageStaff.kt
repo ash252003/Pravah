@@ -78,16 +78,10 @@ fun ManageStaff(
         ""
     )
 
-    /*
-     * Get staff when screen opens
-     */
     LaunchedEffect(Unit) {
         viewModel.getAllStaff(instituteId.toString())
     }
 
-    /*
-     * Observe ViewModel toast messages
-     */
     LaunchedEffect(Unit) {
         viewModel.toastMessage.collect { msg ->
             Toast.makeText(
@@ -103,14 +97,7 @@ fun ManageStaff(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-
-        /*
-         * =========================
-         * STAFF LIST
-         * =========================
-         */
         if (staff.isNotEmpty()) {
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -123,12 +110,7 @@ fun ManageStaff(
                     ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
-                /*
-                 * Header
-                 */
                 item {
-
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -138,7 +120,6 @@ fun ManageStaff(
                                 bottom = 4.dp
                             )
                     ) {
-
                         Text(
                             text = "Staff Members",
                             style = MaterialTheme.typography.headlineSmall,
@@ -157,10 +138,6 @@ fun ManageStaff(
                         )
                     }
                 }
-
-                /*
-                 * Staff cards
-                 */
                 items(
                     items = staff,
                     key = { member ->
@@ -188,10 +165,6 @@ fun ManageStaff(
                                 ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-
-                            /*
-                             * Avatar
-                             */
                             Box(
                                 modifier = Modifier
                                     .size(48.dp)
@@ -203,7 +176,6 @@ fun ManageStaff(
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-
                                 Text(
                                     text = member.name
                                         .trim()
@@ -221,9 +193,6 @@ fun ManageStaff(
                                 modifier = Modifier.width(14.dp)
                             )
 
-                            /*
-                             * Name + Email
-                             */
                             Column(
                                 modifier = Modifier.weight(1f)
                             ) {
@@ -239,7 +208,6 @@ fun ManageStaff(
                                 Spacer(
                                     modifier = Modifier.height(3.dp)
                                 )
-
                                 Text(
                                     text = member.email,
                                     style = MaterialTheme.typography.bodyMedium,
@@ -249,10 +217,6 @@ fun ManageStaff(
                                     maxLines = 1
                                 )
                             }
-
-                            /*
-                             * More menu
-                             */
                             Box {
 
                                 IconButton(
@@ -260,7 +224,6 @@ fun ManageStaff(
                                         expandedMenu = member.email
                                     }
                                 ) {
-
                                     Icon(
                                         imageVector = Icons.Default.MoreVert,
                                         contentDescription = "More options",
@@ -269,14 +232,12 @@ fun ManageStaff(
                                             .onSurfaceVariant
                                     )
                                 }
-
                                 DropdownMenu(
                                     expanded = expandedMenu == member.email,
                                     onDismissRequest = {
                                         expandedMenu = null
                                     }
                                 ) {
-
                                     DropdownMenuItem(
                                         leadingIcon = {
                                             Icon(
@@ -314,12 +275,6 @@ fun ManageStaff(
             }
 
         } else {
-
-            /*
-             * =========================
-             * EMPTY STATE
-             * =========================
-             */
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -353,7 +308,6 @@ fun ManageStaff(
                             .onPrimaryContainer
                     )
                 }
-
                 Spacer(
                     modifier = Modifier.height(18.dp)
                 )
@@ -379,12 +333,6 @@ fun ManageStaff(
                 )
             }
         }
-
-        /*
-         * =========================
-         * ADD STAFF FAB
-         * =========================
-         */
         ExtendedFloatingActionButton(
             onClick = {
                 showAddStaffDialog = true
@@ -405,28 +353,18 @@ fun ManageStaff(
             contentColor = MaterialTheme.colorScheme.onPrimary
         )
     }
-
-    /*
-     * =========================
-     * ADD STAFF DIALOG
-     * =========================
-     */
     if (showAddStaffDialog) {
-
         var name by remember {
             mutableStateOf("")
         }
-
         var email by remember {
             mutableStateOf("")
         }
-
         Dialog(
             onDismissRequest = {
                 showAddStaffDialog = false
             }
         ) {
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -441,14 +379,9 @@ fun ManageStaff(
                     defaultElevation = 8.dp
                 )
             ) {
-
                 Column(
                     modifier = Modifier.padding(24.dp)
                 ) {
-
-                    /*
-                     * Dialog title
-                     */
                     Text(
                         text = "Add Staff",
                         style = MaterialTheme.typography.headlineSmall,

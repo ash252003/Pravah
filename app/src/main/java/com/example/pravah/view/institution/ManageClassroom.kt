@@ -1,7 +1,6 @@
 package com.example.pravah.view.institution
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,35 +49,125 @@ import com.example.pravah.viewmodel.AuthViewModel
 import com.example.pravah.viewmodel.ClassViewModel
 
 @Composable
-fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: AuthViewModel = viewModel()) {
+fun ManageClassroom(
+    viewModel: ClassViewModel = viewModel(),
+    authViewModel: AuthViewModel = viewModel()
+) {
+
     val context = LocalContext.current
-    var showAddRoomDialog by remember { mutableStateOf(false) }
-    val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
-    val instituteId = sharedPreferences.getString("instituteId", "")
-    // Device count
-    var deviceCountText by remember { mutableStateOf("1") }
-    var deviceCount by remember { mutableStateOf(1) }
-    LaunchedEffect(Unit) {
-        viewModel.getRoomsByInstitute(instituteId.toString())
+
+    var showAddRoomDialog by remember {
+        mutableStateOf(false)
     }
-    val room = viewModel.rooms
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (room.isNotEmpty()) {
+
+    // Selected room for editing
+    var selectedRoom by remember {
+        mutableStateOf<RoomModel?>(null)
+    }
+
+    val sharedPreferences = context.getSharedPreferences(
+        "user_session",
+        Context.MODE_PRIVATE
+    )
+
+    val instituteId = sharedPreferences.getString(
+        "instituteId",
+        ""
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.getRoomsByInstitute(
+            instituteId.toString()
+        )
+    }
+
+    val rooms = viewModel.rooms
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+
+        // =========================================================
+        // ROOM LIST
+        // =========================================================
+
+        if (rooms.isNotEmpty()) {
+
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 20.dp,
+                        bottom = 100.dp
+                    ),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
                 item {
-                    room.forEach { room ->
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 4.dp,
+                                end = 4.dp,
+                                bottom = 4.dp
+                            )
+                    ) {
+
+                        Text(
+                            text = "Classrooms",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(4.dp)
+                        )
+
+                        Text(
+                            text = "${rooms.size} room" +
+                                    if (rooms.size != 1) "s" else "",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                item {
+
+                    rooms.forEach { room ->
+
                         Classroom(
                             roomId = room.id,
                             roomNo = room.roomNo,
                             deviceCount = room.devices.size,
+
+                            // =================================================
+                            // EDIT
+                            // =================================================
+
+                            onEdit = {
+
+                                selectedRoom = room
+
+                            },
+
+                            // =================================================
+                            // DELETE
+                            // =================================================
+
                             onDelete = { roomId ->
+
                                 viewModel.deleteRoom(roomId) {
+
                                     viewModel.getRoomsByInstitute(
                                         instituteId.toString()
                                     )
+
                                     Toast.makeText(
                                         context,
                                         "Room Deleted Successfully",
@@ -89,24 +179,57 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                     }
                 }
             }
+
         } else {
-            Column(modifier = Modifier.fillMaxSize(),
+
+            // =========================================================
+            // EMPTY STATE
+            // =========================================================
+
+            Column(
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center) {
-                Text("No Data Found")
+                verticalArrangement = Arrangement.Center
+            ) {
+
+                Text(
+                    text = "No Classrooms Found",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(
+                    modifier = Modifier.height(6.dp)
+                )
+
+                Text(
+                    text = "Add a classroom to get started.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
+
+        // =============================================================
+        // ADD CLASS BUTTON
+        // =============================================================
+
         BottomAppBar(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(vertical = 0.dp, horizontal = 16.dp),
+                .padding(
+                    horizontal = 16.dp
+                ),
             containerColor = Color.Transparent
         ) {
+
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .background(color = Color.Transparent),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent),
                 horizontalArrangement = Arrangement.End
             ) {
+
                 ExtendedFloatingActionButton(
                     onClick = {
                         showAddRoomDialog = true
@@ -114,19 +237,32 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Add Button"
+                            contentDescription = "Add Classroom"
                         )
                     },
-                    text = { Text("Add Class") },
+                    text = {
+                        Text("Add Class")
+                    },
                     contentColor = Color.White,
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             }
         }
     }
+
+    // =================================================================
+    // ADD CLASSROOM DIALOG
+    // =================================================================
+
     if (showAddRoomDialog) {
-        var roomNo by remember { mutableStateOf("") }
-        var roomStatus by remember { mutableStateOf("empty") }
+
+        var roomNo by remember {
+            mutableStateOf("")
+        }
+
+        var deviceCountText by remember {
+            mutableStateOf("1")
+        }
 
         val deviceNames = remember {
             mutableStateListOf("")
@@ -137,11 +273,12 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                 showAddRoomDialog = false
             }
         ) {
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(20.dp)
             ) {
 
                 LazyColumn(
@@ -149,15 +286,20 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                         .padding(20.dp)
                         .width(300.dp)
                 ) {
+
                     item {
+
                         Text(
                             text = "Add Classroom",
                             style = MaterialTheme.typography.headlineSmall
                         )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
 
-                        // Room Number
+                        // Room number
+
                         OutlinedTextField(
                             value = roomNo,
                             onValueChange = {
@@ -168,24 +310,50 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                             },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            isError = roomNo.isNotEmpty() && !authViewModel.isValidName(roomNo)
+                            isError = roomNo.isNotEmpty() &&
+                                    !authViewModel.isValidName(roomNo)
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(
+                            modifier = Modifier.height(12.dp)
+                        )
+
+                        // Device count
 
                         OutlinedTextField(
                             value = deviceCountText,
                             onValueChange = { value ->
-                                if (value.all { it.isDigit() }) {
-                                    deviceCountText = value
-                                    val count = value.toIntOrNull()
-                                    if (count != null && count in 1..20) {
-                                        deviceCount = count
-                                        while (deviceNames.size < count) {
-                                            deviceNames.add("")
-                                        }
-                                        while (deviceNames.size > count) {
-                                            deviceNames.removeAt(deviceNames.lastIndex)
+
+                                if (
+                                    value.isEmpty() ||
+                                    value.all { it.isDigit() }
+                                ) {
+
+                                    val count =
+                                        value.toIntOrNull()
+
+                                    if (
+                                        value.isEmpty() ||
+                                        (count != null && count in 1..20)
+                                    ) {
+
+                                        deviceCountText = value
+
+                                        if (count != null) {
+
+                                            while (
+                                                deviceNames.size < count
+                                            ) {
+                                                deviceNames.add("")
+                                            }
+
+                                            while (
+                                                deviceNames.size > count
+                                            ) {
+                                                deviceNames.removeAt(
+                                                    deviceNames.lastIndex
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -197,10 +365,14 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                             singleLine = true
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(
+                            modifier = Modifier.height(12.dp)
+                        )
 
-                        // Device fields
+                        // ESP IDs
+
                         deviceNames.forEachIndexed { index, deviceName ->
+
                             OutlinedTextField(
                                 value = deviceName,
                                 onValueChange = {
@@ -210,14 +382,17 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                                     Text("ESP ID ${index + 1}")
                                 },
                                 modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                isError = deviceName.isNotEmpty() && !authViewModel.isValidName(deviceName)
+                                singleLine = true
                             )
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(
+                                modifier = Modifier.height(8.dp)
+                            )
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(
+                            modifier = Modifier.height(16.dp)
+                        )
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -232,34 +407,45 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                                 Text("Cancel")
                             }
 
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(
+                                modifier = Modifier.width(8.dp)
+                            )
 
                             Button(
                                 onClick = {
+
                                     if (
                                         roomNo.isBlank() ||
-                                        deviceNames.any { it.isBlank() }
+                                        deviceNames.any {
+                                            it.isBlank()
+                                        }
                                     ) {
+
                                         Toast.makeText(
                                             context,
                                             "Please fill all fields",
                                             Toast.LENGTH_SHORT
                                         ).show()
+
                                         return@Button
                                     }
-                                    val devices = deviceNames.map { espId ->
-                                        DeviceModel(
-                                            id = "",
-                                            classId = "",
-                                            deviceName = espId,
-                                            status = "working",
-                                            powerStatus = null
-                                        )
-                                    }
+
+                                    val devices =
+                                        deviceNames.map { espId ->
+
+                                            DeviceModel(
+                                                id = "",
+                                                classId = "",
+                                                deviceName = espId,
+                                                status = "working",
+                                                powerStatus = null
+                                            )
+                                        }
 
                                     viewModel.addRoom(
-                                        institutionId = instituteId.toString(),
-                                        roomNo = roomNo,
+                                        institutionId =
+                                            instituteId.toString(),
+                                        roomNo = roomNo.trim(),
                                         roomStatus = "empty",
                                         devices = devices
                                     ) { success ->
@@ -289,7 +475,283 @@ fun ManageClassroom(viewModel: ClassViewModel = viewModel(), authViewModel: Auth
                                     }
                                 }
                             ) {
+
                                 Text("Add")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // =================================================================
+    // EDIT CLASSROOM DIALOG
+    // =================================================================
+
+    selectedRoom?.let { currentRoom ->
+
+        var editRoomNo by remember(
+            currentRoom.id
+        ) {
+            mutableStateOf(currentRoom.roomNo)
+        }
+
+        val editDeviceNames = remember(
+            currentRoom.id
+        ) {
+            mutableStateListOf<String>().apply {
+
+                addAll(
+                    currentRoom.devices.map {
+                        it.deviceName
+                    }
+                )
+            }
+        }
+
+        var editDeviceCountText by remember(
+            currentRoom.id
+        ) {
+            mutableStateOf(
+                currentRoom.devices.size.toString()
+            )
+        }
+
+        Dialog(
+            onDismissRequest = {
+                selectedRoom = null
+            }
+        ) {
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .width(300.dp)
+                ) {
+
+                    item {
+
+                        Text(
+                            text = "Edit Classroom",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+
+                        // =================================================
+                        // ROOM NUMBER
+                        // =================================================
+
+                        OutlinedTextField(
+                            value = editRoomNo,
+                            onValueChange = {
+                                editRoomNo = it
+                            },
+                            label = {
+                                Text("Room Number")
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(12.dp)
+                        )
+
+                        // =================================================
+                        // DEVICE COUNT
+                        // =================================================
+
+                        OutlinedTextField(
+                            value = editDeviceCountText,
+                            onValueChange = { value ->
+
+                                if (
+                                    value.isEmpty() ||
+                                    value.all { it.isDigit() }
+                                ) {
+
+                                    val count =
+                                        value.toIntOrNull()
+
+                                    if (
+                                        value.isEmpty() ||
+                                        (count != null && count in 1..20)
+                                    ) {
+
+                                        editDeviceCountText = value
+
+                                        if (count != null) {
+
+                                            while (
+                                                editDeviceNames.size < count
+                                            ) {
+                                                editDeviceNames.add("")
+                                            }
+
+                                            while (
+                                                editDeviceNames.size > count
+                                            ) {
+                                                editDeviceNames.removeAt(
+                                                    editDeviceNames.lastIndex
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            label = {
+                                Text("Number of Devices")
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(12.dp)
+                        )
+
+                        // =================================================
+                        // ESP IDs
+                        // =================================================
+
+                        editDeviceNames.forEachIndexed {
+                                index,
+                                deviceName ->
+
+                            OutlinedTextField(
+                                value = deviceName,
+                                onValueChange = {
+                                    editDeviceNames[index] = it
+                                },
+                                label = {
+                                    Text("ESP ID ${index + 1}")
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+
+                            Spacer(
+                                modifier = Modifier.height(8.dp)
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(16.dp)
+                        )
+
+                        // =================================================
+                        // BUTTONS
+                        // =================================================
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+
+                            TextButton(
+                                onClick = {
+                                    selectedRoom = null
+                                }
+                            ) {
+                                Text("Cancel")
+                            }
+
+                            Spacer(
+                                modifier = Modifier.width(8.dp)
+                            )
+
+                            Button(
+                                onClick = {
+
+                                    // Validate room
+                                    if (
+                                        editRoomNo.isBlank()
+                                    ) {
+
+                                        Toast.makeText(
+                                            context,
+                                            "Please enter room number",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                        return@Button
+                                    }
+
+                                    // Validate devices
+                                    if (
+                                        editDeviceNames.isEmpty() ||
+                                        editDeviceNames.any {
+                                            it.isBlank()
+                                        }
+                                    ) {
+
+                                        Toast.makeText(
+                                            context,
+                                            "Please fill all device IDs",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                        return@Button
+                                    }
+
+                                    val updatedDevices =
+                                        editDeviceNames.map { espId ->
+
+                                            DeviceModel(
+                                                id = "",
+                                                classId = currentRoom.id,
+                                                deviceName = espId.trim(),
+                                                status = "working",
+                                                powerStatus = null
+                                            )
+                                        }
+
+                                    viewModel.editRoom(
+                                        roomId = currentRoom.id,
+                                        roomNo = editRoomNo.trim(),
+                                        devices = updatedDevices,
+                                        institutionId =
+                                            instituteId.toString()
+                                    ) { success ->
+
+                                        if (success) {
+
+                                            Toast.makeText(
+                                                context,
+                                                "Room Updated Successfully",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+
+                                            selectedRoom = null
+
+                                            viewModel.getRoomsByInstitute(
+                                                instituteId.toString()
+                                            )
+
+                                        } else {
+
+                                            Toast.makeText(
+                                                context,
+                                                "Failed to update room",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                }
+                            ) {
+
+                                Text("Save")
                             }
                         }
                     }
