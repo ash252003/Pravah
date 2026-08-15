@@ -32,7 +32,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "MAILER_API_KEY", "\"${localProperties.getProperty("MAILER_API_KEY", "")}\"")
+        buildConfigField("String", "GMAIL_ADDRESS", "\"${localProperties.getProperty("GMAIL_ADDRESS", "")}\"")
+        buildConfigField("String", "GMAIL_APP_PASSWORD", "\"${localProperties.getProperty("GMAIL_APP_PASSWORD", "")}\"")
     }
 
     buildTypes {
