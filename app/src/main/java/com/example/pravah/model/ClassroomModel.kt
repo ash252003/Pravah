@@ -200,4 +200,21 @@ class ClassroomModel {
             false
         }
     }
+    suspend fun updateDevicePowerStatus(deviceId: String, powerStatus: String): Boolean {
+        return try {
+            firestore
+                .collection("devices")
+                .document(deviceId)
+                .update("powerStatus", powerStatus)
+                .await()
+            true
+        } catch (e: Exception) {
+            Log.e(
+                "Firestore",
+                "Error updating device power status: ${e.message}",
+                e
+            )
+            false
+        }
+    }
 }

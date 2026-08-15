@@ -132,4 +132,22 @@ class ClassViewModel(private val repo: ClassroomModel = ClassroomModel()): ViewM
             }
         }
     }
+    fun toggleDevicePower(deviceId: String, isOn: Boolean) {
+        viewModelScope.launch {
+            val newStatus = if (isOn) "ON" else "OFF"
+            val success = repo.updateDevicePowerStatus(deviceId, newStatus)
+
+            if (success) {
+                rooms = rooms.map { room ->
+                    room.copy(
+                        devices = room.devices.map { device ->
+                            if (device.id == deviceId) device.copy(powerStatus = newStatus) else device
+                        }
+                    )
+                }
+            } else {
+                Log.e("Device", "Failed to update power status for device $deviceId")
+            }
+        }
+    }
 }

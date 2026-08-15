@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import com.example.pravah.model.RoomModel
 import com.example.pravah.ui.theme.PravahAppTheme
 
-
 @Composable
 fun cardComposable(
     room: RoomModel,
@@ -127,7 +126,15 @@ private fun StatusPill(isActive: Boolean, label: String) {
 @Composable
 private fun RoomCardPreviewActive() {
     PravahAppTheme {
-        cardComposable(room = RoomModel(roomNo = 101.toString(), status = "Active"))
+        cardComposable(
+            room = RoomModel(
+                id = "1",
+                institutionId = "ABC123",
+                roomNo = "101",
+                devices = emptyList(),
+                status = "Active"
+            )
+        )
     }
 }
 
@@ -135,6 +142,14 @@ private fun RoomCardPreviewActive() {
 @Composable
 private fun RoomCardPreviewInactive() {
     PravahAppTheme {
-        cardComposable(room = RoomModel(roomNo = 204.toString(), status = "Inactive"))
+        cardComposable(
+            room = RoomModel(
+                id = "2",
+                institutionId = "ABC123",
+                roomNo = "204",
+                devices = emptyList(),
+                status = "Inactive"
+            )
+        )
     }
 }

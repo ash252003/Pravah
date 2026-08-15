@@ -33,9 +33,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pravah.model.DeviceModel
 import com.example.pravah.ui.theme.PravahAppTheme
+import com.example.pravah.viewmodel.ClassViewModel
+
 
 @Composable
-fun DeviceInfo(device: DeviceModel) {
+fun DeviceInfoScreen(
+    deviceId: String,
+    viewModel: ClassViewModel,
+) {
+    val device = viewModel.rooms
+        .flatMap { it.devices }
+        .firstOrNull { it.id == deviceId }
+
+    if (device != null) {
+        DeviceInfo(
+            device = device,
+            onTogglePower = { isOn -> viewModel.toggleDevicePower(deviceId, isOn) }
+        )
+    } else {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = if (viewModel.isLoading) "Loading device..." else "Device not found",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun DeviceInfo(device: DeviceModel, onTogglePower: (Boolean) -> Unit) {
     val isActive = device.status.equals("Working", ignoreCase = true)
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -48,7 +78,7 @@ fun DeviceInfo(device: DeviceModel) {
                 DeviceInfoHeader(device = device, isActive = isActive)
             }
             item {
-                PowerStatusRow(device = device)
+                PowerStatusRow(device = device, onTogglePower = onTogglePower)
             }
         }
     }
@@ -104,8 +134,8 @@ private fun DeviceInfoHeader(device: DeviceModel, isActive: Boolean) {
 }
 
 @Composable
-private fun PowerStatusRow(device: DeviceModel) {
-    var isOn by remember { mutableStateOf(device.powerStatus.equals("ON", ignoreCase = true)) }
+private fun PowerStatusRow(device: DeviceModel, onTogglePower: (Boolean) -> Unit) {
+    val isOn = device.powerStatus.equals("ON", ignoreCase = true) // powerStatus is String? — safe on null
 
     ElevatedCard(
         shape = RoundedCornerShape(20.dp),
@@ -138,7 +168,7 @@ private fun PowerStatusRow(device: DeviceModel) {
             }
             Switch(
                 checked = isOn,
-                onCheckedChange = { isOn = it },
+                onCheckedChange = onTogglePower, // -> viewModel.toggleDevicePower -> Firestore
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                     checkedTrackColor = MaterialTheme.colorScheme.primary,
@@ -153,15 +183,28 @@ private fun PowerStatusRow(device: DeviceModel) {
 @Preview(showBackground = true)
 @Composable
 private fun DeviceInfoPreviewOn() {
+
+    var previewDevice by remember {
+        mutableStateOf(DeviceModel(id = "d1", classId = "1", deviceName = "AirConditioner1", status = "Working", powerStatus = "ON"))
+    }
     PravahAppTheme {
-        DeviceInfo(device = DeviceModel("AirConditioner1", "Working", "ON"))
+        DeviceInfo(
+            device = previewDevice,
+            onTogglePower = { isOn -> previewDevice = previewDevice.copy(powerStatus = if (isOn) "ON" else "OFF") }
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun DeviceInfoPreviewOff() {
+    var previewDevice by remember {
+        mutableStateOf(DeviceModel(id = "d2", classId = "1", deviceName = "AirConditioner2", status = "Damaged", powerStatus = "OFF"))
+    }
     PravahAppTheme {
-        DeviceInfo(device = DeviceModel("AirConditioner2", "Damaged", "OFF"))
+        DeviceInfo(
+            device = previewDevice,
+            onTogglePower = { isOn -> previewDevice = previewDevice.copy(powerStatus = if (isOn) "ON" else "OFF") }
+        )
     }
 }

@@ -2,66 +2,67 @@ package com.example.pravah.nav
 
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Class
-import androidx.compose.material.icons.filled.ControlCamera
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.MeetingRoom
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Sensors
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.pravah.R
 import com.example.pravah.model.DrawerItem
-import kotlinx.coroutines.launch
-import androidx.core.content.edit
-import com.example.pravah.view.Staff.DeviceInfo
-import com.example.pravah.view.Staff.RoomInfo
-import com.example.pravah.view.Staff.RoomList
+import com.example.pravah.view.Staff.DeviceInfoScreen
+import com.example.pravah.view.Staff.RoomInfoScreen
+import com.example.pravah.view.Staff.RoomListScreen
 import com.example.pravah.view.institution.ManageClassroom
 import com.example.pravah.view.institution.ManageStaff
+import com.example.pravah.viewmodel.ClassViewModel
+
+
+private object Routes {
+    const val ROOM_LIST = "room_list"
+    const val MANAGE_CLASSROOM = "manage_classroom"
+    const val MANAGE_STAFF = "manage_staff"
+
+    private const val ROOM_INFO_BASE = "roomInfo"
+    const val ROOM_INFO_PATTERN = "$ROOM_INFO_BASE/{roomId}"
+    fun roomInfo(roomId: String) = "$ROOM_INFO_BASE/$roomId"
+
+    private const val DEVICE_INFO_BASE = "deviceInfo"
+    const val DEVICE_INFO_PATTERN = "$DEVICE_INFO_BASE/{deviceId}"
+    fun deviceInfo(deviceId: String) = "$DEVICE_INFO_BASE/$deviceId"
+}
 
 @SuppressLint("CommitPrefEdits")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,6 +79,24 @@ fun UserNavigation(rootNavController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
     val userType = sharedPreferences.getString("user_type", "")
+    val institutionId = sharedPreferences.getString("institution_id", "") ?: ""
+    val classViewModel: ClassViewModel = viewModel()
+
+    LaunchedEffect(institutionId) {
+        if (institutionId.isNotBlank()) {
+            classViewModel.getRoomsByInstitute(institutionId)
+        }
+    }
+
+    LaunchedEffect(userType) {
+        if (userType == "staff") {
+            navController.navigate(Routes.ROOM_LIST) {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -118,7 +137,7 @@ fun UserNavigation(rootNavController: NavController) {
             )
         },
         bottomBar = {
-            if(userType == "admin"){
+            if (userType == "admin") {
                 val currentRoute =
                     navController.currentBackStackEntryAsState().value?.destination?.route
                 NavigationBar {
@@ -158,23 +177,35 @@ fun UserNavigation(rootNavController: NavController) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "room_list",
+            startDestination = Routes.ROOM_LIST,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("room_list") {
-                //RoomList()
+            composable(Routes.ROOM_LIST) {
+                RoomListScreen(navController = navController, viewModel = classViewModel)
             }
-            composable("manage_classroom") {
-                ManageClassroom()
+
+            if (userType == "admin") {
+                composable(Routes.MANAGE_CLASSROOM) {
+                    ManageClassroom()
+                }
+                composable(Routes.MANAGE_STAFF) {
+                    ManageStaff()
+                }
             }
-            composable("manage_staff") {
-                ManageStaff()
+
+            composable(
+                route = Routes.ROOM_INFO_PATTERN,
+                arguments = listOf(navArgument("roomId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val roomId = backStackEntry.arguments?.getString("roomId") ?: return@composable
+                RoomInfoScreen(roomId = roomId, navController = navController, viewModel = classViewModel)
             }
-            composable ("roomInfo"){
-                //RoomInfo()
-            }
-            composable ("deviceInfo"){
-                //DeviceInfo()
+            composable(
+                route = Routes.DEVICE_INFO_PATTERN,
+                arguments = listOf(navArgument("deviceId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val deviceId = backStackEntry.arguments?.getString("deviceId") ?: return@composable
+                DeviceInfoScreen(deviceId = deviceId, viewModel = classViewModel)
             }
         }
     }

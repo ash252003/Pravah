@@ -29,7 +29,7 @@ import com.example.pravah.ui.theme.PravahAppTheme
 @Composable
 fun DeviceCard(onClick: () -> Unit = {}, device: DeviceModel) {
     val isActive = device.status.equals("Working", ignoreCase = true)
-    val isOn = device.powerStatus.equals("ON", ignoreCase = true)
+    val isOn = device.powerStatus.equals("ON", ignoreCase = true) // powerStatus is String? — .equals on a nullable receiver safely returns false for null
 
     ElevatedCard(
         onClick = onClick,
@@ -78,7 +78,7 @@ fun DeviceCard(onClick: () -> Unit = {}, device: DeviceModel) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = device.deviceName, // was "Room ${device.deviceName}" — leftover from RoomCard copy-paste
+                    text = device.deviceName,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -127,15 +127,13 @@ private fun StatusPill(isOn: Boolean, label: String?, isActive: Boolean) {
                 .size(8.dp)
                 .background(color = dotColor, shape = CircleShape)
         )
-        if (label != null) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = contentColor
-            )
-        }
-    }
 
+        Text(
+            text = label ?: "OFF",
+            style = MaterialTheme.typography.labelMedium,
+            color = contentColor
+        )
+    }
 }
 
 @Preview(showBackground = true)
@@ -143,7 +141,7 @@ private fun StatusPill(isOn: Boolean, label: String?, isActive: Boolean) {
 private fun DeviceCardPreview() {
     PravahAppTheme {
         DeviceCard(
-            device = DeviceModel("AirConditioner1", "Working", "ON")
+            device = DeviceModel(id = "d1", classId = "1", deviceName = "AirConditioner1", status = "Working", powerStatus = "ON")
         )
     }
 }
@@ -152,9 +150,9 @@ private fun DeviceCardPreview() {
 @Composable
 private fun DeviceCardDamagedOnPreview() {
     PravahAppTheme {
-        // Damaged but still drawing power — the case the old code couldn't distinguish
+
         DeviceCard(
-            device = DeviceModel("AirConditioner2", "Damaged", "ON")
+            device = DeviceModel(id = "d2", classId = "1", deviceName = "AirConditioner2", status = "Damaged", powerStatus = "ON")
         )
     }
 }
@@ -164,7 +162,18 @@ private fun DeviceCardDamagedOnPreview() {
 private fun DeviceCardErrorPreview() {
     PravahAppTheme {
         DeviceCard(
-            device = DeviceModel("AirConditioner3", "Damaged", "OFF")
+            device = DeviceModel(id = "d3", classId = "1", deviceName = "AirConditioner3", status = "Damaged", powerStatus = "OFF")
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DeviceCardNullPowerStatusPreview() {
+    PravahAppTheme {
+
+        DeviceCard(
+            device = DeviceModel(id = "d4", classId = "1", deviceName = "AirConditioner4", status = "Working", powerStatus = null)
         )
     }
 }
