@@ -1,22 +1,43 @@
 package com.example.pravah.nav
 
-import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
-@SuppressLint("ViewModelConstructorInComposable")
 @Composable
-fun RootNavigation(){
+fun RootNavigation() {
+
+    val context = LocalContext.current
+
+    val sharedPreferences = context.getSharedPreferences(
+        "user_session",
+        Context.MODE_PRIVATE
+    )
+
+    val isLoggedIn = sharedPreferences.getBoolean(
+        "isLoggedIn",
+        false
+    )
+
     val navController = rememberNavController()
+
     NavHost(
         navController = navController,
-        startDestination = "auth"
+
+        startDestination = if (isLoggedIn) {
+            "user_home"
+        } else {
+            "auth"
+        }
     ) {
+
         composable("auth") {
             AppNavigation(navController)
         }
+
         composable("user_home") {
             UserNavigation(navController)
         }

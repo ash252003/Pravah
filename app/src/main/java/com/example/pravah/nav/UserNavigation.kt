@@ -2,6 +2,7 @@ package com.example.pravah.nav
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -12,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Class
 import androidx.compose.material.icons.filled.ControlCamera
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.MeetingRoom
 import androidx.compose.material.icons.filled.Menu
@@ -87,10 +89,22 @@ private object Routes {
 fun UserNavigation(rootNavController: NavController) {
 
     val navController = rememberNavController()
-    val instituteItems = listOf(
-        DrawerItem("Rooms", "room_list", Icons.Default.MeetingRoom),
-        DrawerItem("Manage Classrooms", "manage_classroom", Icons.Default.Class),
-        DrawerItem("Staff", "manage_staff", Icons.Default.ManageAccounts)
+    val adminItems = listOf(
+        DrawerItem(
+            "Rooms",
+            Routes.ROOM_LIST,
+            Icons.Default.MeetingRoom
+        ),
+        DrawerItem(
+            "Classrooms",
+            Routes.MANAGE_CLASSROOM,
+            Icons.Default.Class
+        ),
+        DrawerItem(
+            "Staff",
+            Routes.MANAGE_STAFF,
+            Icons.Default.ManageAccounts
+        )
     )
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -104,8 +118,6 @@ fun UserNavigation(rootNavController: NavController) {
             classViewModel.getRoomsByInstitute(institutionId)
         }
     }
-
-
 
     Scaffold(
         topBar = {
@@ -128,7 +140,9 @@ fun UserNavigation(rootNavController: NavController) {
                         onDismissRequest = { expanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Logout") },
+                            text = {
+                                Text("Logout", color = Color.Red)
+                                   },
                             onClick = {
                                 expanded = false
                                 sharedPreferences.edit {
@@ -140,6 +154,13 @@ fun UserNavigation(rootNavController: NavController) {
                                     }
                                     launchSingleTop = true
                                 }
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Logout,
+                                    contentDescription = "logout",
+                                    tint = Color.Red
+                                )
                             }
                         )
                     }
@@ -147,37 +168,56 @@ fun UserNavigation(rootNavController: NavController) {
             )
         },
         bottomBar = {
-            if(userType == "admin"){
+
+            if (userType == "admin") {
+
                 val currentRoute =
-                    navController.currentBackStackEntryAsState().value?.destination?.route
+                    navController.currentBackStackEntryAsState()
+                        .value
+                        ?.destination
+                        ?.route
+
                 NavigationBar {
-                    instituteItems.forEach { item ->
+
+                    adminItems.forEach { item ->
+
                         NavigationBarItem(
                             selected = currentRoute == item.route,
+
                             onClick = {
+
                                 navController.navigate(item.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
+
+                                    popUpTo(
+                                        navController.graph.startDestinationId
+                                    ) {
                                         saveState = true
                                     }
+
                                     launchSingleTop = true
                                     restoreState = true
                                 }
                             },
+
                             icon = {
                                 Icon(
                                     imageVector = item.icon,
                                     contentDescription = item.title
                                 )
                             },
+
                             label = {
                                 Text(item.title)
                             },
+
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = Color.White,
-                                selectedTextColor = Color.Black,
+                                selectedTextColor =
+                                    MaterialTheme.colorScheme.primary,
                                 unselectedIconColor = Color.Gray,
                                 unselectedTextColor = Color.Gray,
-                                indicatorColor = MaterialTheme.colorScheme.primary
+                                indicatorColor =
+                                    MaterialTheme.colorScheme.primary
                             )
                         )
                     }
@@ -190,32 +230,68 @@ fun UserNavigation(rootNavController: NavController) {
             startDestination = Routes.ROOM_LIST,
             modifier = Modifier.padding(innerPadding)
         ) {
+
+            // TAB 1
             composable(Routes.ROOM_LIST) {
-                RoomListScreen(navController = navController, viewModel = classViewModel)
+                RoomListScreen(
+                    navController = navController,
+                    viewModel = classViewModel
+                )
             }
 
+            // TAB 2
             if (userType == "admin") {
                 composable(Routes.MANAGE_CLASSROOM) {
-                    ManageClassroom(viewModel = classViewModel)
+                    ManageClassroom(
+                        viewModel = classViewModel
+                    )
                 }
+
+                // TAB 3
                 composable(Routes.MANAGE_STAFF) {
                     ManageStaff()
                 }
             }
 
+            // NOT BOTTOM TABS
+            // These are opened from Room List
             composable(
                 route = Routes.ROOM_INFO_PATTERN,
-                arguments = listOf(navArgument("roomId") { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument("roomId") {
+                        type = NavType.StringType
+                    }
+                )
             ) { backStackEntry ->
-                val roomId = backStackEntry.arguments?.getString("roomId") ?: return@composable
-                RoomInfoScreen(roomId = roomId, navController = navController, viewModel = classViewModel)
+
+                val roomId =
+                    backStackEntry.arguments?.getString("roomId")
+                        ?: return@composable
+
+                RoomInfoScreen(
+                    roomId = roomId,
+                    navController = navController,
+                    viewModel = classViewModel
+                )
             }
+
             composable(
                 route = Routes.DEVICE_INFO_PATTERN,
-                arguments = listOf(navArgument("deviceId") { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument("deviceId") {
+                        type = NavType.StringType
+                    }
+                )
             ) { backStackEntry ->
-                val deviceId = backStackEntry.arguments?.getString("deviceId") ?: return@composable
-                DeviceInfoScreen(deviceId = deviceId, viewModel = classViewModel)
+
+                val deviceId =
+                    backStackEntry.arguments?.getString("deviceId")
+                        ?: return@composable
+
+                DeviceInfoScreen(
+                    deviceId = deviceId,
+                    viewModel = classViewModel
+                )
             }
         }
     }

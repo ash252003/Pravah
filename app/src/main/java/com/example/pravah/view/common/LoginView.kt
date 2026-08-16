@@ -67,16 +67,9 @@ import com.example.pravah.viewmodel.UserViewModel
 fun LoginView(navController: NavController, rootNavController: NavController, viewModel: AuthViewModel = viewModel(),
               userViewModel: UserViewModel = viewModel()){
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
-    val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
     LaunchedEffect(Unit) {
         viewModel.toastMessage.collect{ msg ->
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-        }
-    }
-    if (isLoggedIn){
-        rootNavController.navigate("user_home") {
-            popUpTo("login") { inclusive = true }
         }
     }
     LaunchedEffect(Unit) {
@@ -190,7 +183,6 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                         onValueChange = {password = it},
                         label = { Text(stringResource(R.string.password)) },
                         singleLine = true,
-                        isError = password.isNotEmpty() && !viewModel.isValidPassword(password),
                         visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         leadingIcon = {
                             Icon(
@@ -227,11 +219,10 @@ fun LoginView(navController: NavController, rootNavController: NavController, vi
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
-                            if(viewModel.isValidEmail(email) && viewModel.isValidPassword(password)){
-                                viewModel.checkLogin(selectedInstitution, email, password){ userType ->
-                                    userViewModel.getInstitutionId(selectedInstitution){ id ->
+                            if(viewModel.isValidEmail(email) && password.isNotEmpty()){
+                                userViewModel.getInstitutionId(selectedInstitution) { id ->
+                                    viewModel.checkLogin(selectedInstitution, email, password, id){ userType ->
                                         saveLogin(context, userType.toString(), selectedInstitution, email, id)
-                                        Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
                                         rootNavController.navigate("user_home"){
                                             popUpTo("auth"){
                                                 inclusive = true

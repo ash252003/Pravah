@@ -60,14 +60,15 @@ class UserModel {
     suspend fun checkLogin(
         name: String,
         email: String,
-        password: String
+        password: String,
+        instituteId: String
     ): LoginResult? {
 
         return try {
 
             // Check staff
             val staffRef = firestore.collection("staff")
-                .whereEqualTo("institution_name", name)
+                .whereEqualTo("institute_id", instituteId)
                 .whereEqualTo("email", email)
                 .whereEqualTo("password", password)
                 .limit(1)

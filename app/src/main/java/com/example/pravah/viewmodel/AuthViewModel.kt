@@ -75,15 +75,16 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
         name: String,
         email: String,
         password: String,
+        instituteId: String,
         onSuccess: (String?) -> Unit
     ){
         viewModelScope.launch {
             isLoginLoading = true
-            val result = repo.checkLogin(name, email, password)
+            val result = repo.checkLogin(name, email, password, instituteId)
             isLoginLoading = false
             if(result != null){
                 _toastMessage.emit("Login Successful")
-                onSuccess(result.toString())
+                onSuccess(result.userType)
             }else{
                 _toastMessage.emit("Login Failed")
             }
