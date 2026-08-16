@@ -67,7 +67,10 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
             }
         }
     }
-
+    data class LoginResult(
+        val userType: String,
+        val institutionId: String
+    )
     fun checkLogin(
         name: String,
         email: String,
@@ -80,7 +83,7 @@ class AuthViewModel(private val repo: UserModel = UserModel()): ViewModel() {
             isLoginLoading = false
             if(result != null){
                 _toastMessage.emit("Login Successful")
-                onSuccess(result)
+                onSuccess(result.toString())
             }else{
                 _toastMessage.emit("Login Failed")
             }

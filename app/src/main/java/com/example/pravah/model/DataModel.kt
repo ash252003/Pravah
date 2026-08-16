@@ -33,3 +33,7 @@ data class StaffDetails(
     val name: String,
     val email: String
 )
+data class LoginResult(
+    val userType: String,
+    val institutionId: String
+)

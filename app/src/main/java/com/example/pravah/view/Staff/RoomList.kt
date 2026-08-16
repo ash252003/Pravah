@@ -21,19 +21,25 @@ import com.example.pravah.model.RoomModel
 import com.example.pravah.ui.theme.PravahAppTheme
 import com.example.pravah.viewmodel.ClassViewModel
 
+
 @Composable
 fun RoomListScreen(
     navController: NavController,
-    viewModel: ClassViewModel,
+    viewModel: ClassViewModel
 ) {
+
     RoomList(
         rooms = viewModel.rooms,
         isLoading = viewModel.isLoading,
 
-        onRoomClick = { room -> navController.navigate("roomInfo/${room.id}") }
+        onRoomClick = { room ->
+
+            navController.navigate(
+                "roomInfo/${room.id}"
+            )
+        }
     )
 }
-
 
 @Composable
 fun RoomList(
@@ -41,36 +47,61 @@ fun RoomList(
     isLoading: Boolean = false,
     onRoomClick: (RoomModel) -> Unit
 ) {
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+
         when {
-            isLoading && rooms.isEmpty() -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+
+            isLoading -> {
+
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    CircularProgressIndicator()
                 }
             }
+
             rooms.isEmpty() -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+
                     Text(
                         text = "No rooms yet",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
+
             else -> {
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    contentPadding = PaddingValues(
+                        vertical = 12.dp
+                    ),
+                    verticalArrangement =
+                        Arrangement.spacedBy(4.dp)
                 ) {
+
                     items(
                         items = rooms,
-                        key = { it.id },
+                        key = { it.id }
                     ) { room ->
-                        cardComposable(room = room, onClick = { onRoomClick(room) })
+
+                        cardComposable(
+                            room = room,
+                            onClick = {
+                                onRoomClick(room)
+                            }
+                        )
                     }
                 }
             }

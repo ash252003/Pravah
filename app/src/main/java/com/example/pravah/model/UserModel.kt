@@ -27,22 +27,32 @@ class UserModel {
         }
     }
 
-    suspend fun addStaff(name: String, email: String, password: String, instituteId: String): Boolean{
-        try {
+    suspend fun addStaff(
+        name: String,
+        email: String,
+        password: String,
+        institutionId: String
+    ): Boolean {
+        return try {
             val user = mapOf(
                 "name" to name,
                 "email" to email,
                 "password" to password,
-                "institute_id" to instituteId,
-                "user_type" to "staff"
+                "user_type" to "staff",
+                "institution_id" to institutionId
             )
-            val collectionRef = firestore.collection("staff")
+            firestore
+                .collection("staff")
                 .document()
-            collectionRef.set(user).await()
-            return true
-        } catch (e: Exception){
-            Log.e("Error", "Error adding User: ${e.message}")
-            return false
+                .set(user)
+                .await()
+            true
+        } catch (e: Exception) {
+            Log.e(
+                "Error",
+                "Error adding Staff: ${e.message}"
+            )
+            false
         }
     }
 
@@ -51,8 +61,11 @@ class UserModel {
         name: String,
         email: String,
         password: String
-    ): String? {
+    ): LoginResult? {
+
         return try {
+
+            // Check staff
             val staffRef = firestore.collection("staff")
                 .whereEqualTo("institution_name", name)
                 .whereEqualTo("email", email)
@@ -62,9 +75,16 @@ class UserModel {
                 .await()
 
             if (!staffRef.isEmpty) {
-                return staffRef.documents.firstOrNull()?.getString("user_type")
+
+                val document = staffRef.documents.first()
+
+                return LoginResult(
+                    userType = document.getString("user_type") ?: "staff",
+                    institutionId = document.getString("institution_id") ?: ""
+                )
             }
 
+            // Check admin/institution
             val institutionRef = firestore.collection("institution")
                 .whereEqualTo("institution_name", name)
                 .whereEqualTo("email", email)
@@ -73,9 +93,26 @@ class UserModel {
                 .get()
                 .await()
 
-            institutionRef.documents.firstOrNull()?.getString("user_type")
+            if (!institutionRef.isEmpty) {
+
+                val document = institutionRef.documents.first()
+
+                return LoginResult(
+                    userType = document.getString("user_type") ?: "admin",
+                    institutionId = document.id
+                )
+            }
+
+            null
+
         } catch (e: Exception) {
-            Log.e("Login", "Error checking login", e)
+
+            Log.e(
+                "Login",
+                "Error checking login",
+                e
+            )
+
             null
         }
     }

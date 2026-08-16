@@ -54,46 +54,70 @@ class ClassroomModel {
     suspend fun getRoomsByInstitution(
         institutionId: String
     ): List<RoomModel> {
+
         return try {
+
             val roomSnapshot = firestore
                 .collection("classroom")
-                .whereEqualTo("institution_id", institutionId)
+                .whereEqualTo(
+                    "institution_id",
+                    institutionId
+                )
                 .get()
                 .await()
 
             roomSnapshot.documents.map { document ->
+
                 val classId = document.id
+
                 // Get devices belonging to this classroom
                 val deviceSnapshot = firestore
                     .collection("devices")
-                    .whereEqualTo("classId", classId)
+                    .whereEqualTo(
+                        "classId",
+                        classId
+                    )
                     .get()
                     .await()
 
                 val deviceList = deviceSnapshot.documents.map { deviceDocument ->
+
                     DeviceModel(
                         id = deviceDocument.id,
                         classId = classId,
-                        deviceName = deviceDocument.getString("espId") ?: "",
-                        status = deviceDocument.getString("status") ?: "working",
-                        powerStatus = deviceDocument.getString("powerStatus")
+                        deviceName =
+                            deviceDocument.getString("espId") ?: "",
+                        status =
+                            deviceDocument.getString("status") ?: "working",
+                        powerStatus =
+                            deviceDocument.getString("powerStatus")
                     )
                 }
+
                 RoomModel(
                     id = classId,
-                    institutionId = document.getString("institute_id") ?: "",
-                    roomNo = document.getString("roomNo") ?: "",
+
+                    institutionId =
+                        document.getString("institution_id") ?: "",
+
+                    roomNo =
+                        document.getString("roomNo") ?: "",
+
                     devices = deviceList,
-                    status = document.getString("room_status") ?: "active"
+
+                    status =
+                        document.getString("room_status") ?: "active"
                 )
             }
 
         } catch (e: Exception) {
+
             Log.e(
                 "Room",
                 "Error getting rooms: ${e.message}",
                 e
             )
+
             emptyList()
         }
     }

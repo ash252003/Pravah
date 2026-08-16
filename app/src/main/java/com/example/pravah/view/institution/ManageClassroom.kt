@@ -50,7 +50,7 @@ import com.example.pravah.viewmodel.ClassViewModel
 
 @Composable
 fun ManageClassroom(
-    viewModel: ClassViewModel = viewModel(),
+    viewModel : ClassViewModel,
     authViewModel: AuthViewModel = viewModel()
 ) {
 
@@ -73,7 +73,7 @@ fun ManageClassroom(
     val instituteId = sharedPreferences.getString(
         "instituteId",
         ""
-    )
+    )?:""
 
     LaunchedEffect(Unit) {
         viewModel.getRoomsByInstitute(
