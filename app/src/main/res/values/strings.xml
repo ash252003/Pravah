@@ -7,5 +7,5 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="new_user">New User?</string>
     <string name="register">Register</string>
-    <string name="institution_name">Institution Name</string>
+    <string name="institution_name">Institute Name</string>
 </resources>

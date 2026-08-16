@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -70,8 +71,7 @@ fun RegistrationView(navController: NavController, viewModel: AuthViewModel = vi
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .imePadding()
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+            .imePadding(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -201,21 +201,25 @@ fun RegistrationView(navController: NavController, viewModel: AuthViewModel = vi
                         Text(stringResource(R.string.register))
                     }
                     Spacer(Modifier.height(16.dp))
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) { Text(text = "Already Have An Account?",
-                        color = colorResource(R.color.black),
-                        modifier = Modifier.padding(end = 4.dp),
-                        fontWeight = FontWeight.Bold
-                    )
-                        Text(text = stringResource(R.string.login),
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalArrangement = Arrangement.Center,
+                        maxItemsInEachRow = 2
+                    ) {
+                        Text(
+                            text = "Already Have An Account? ",
+                            color = colorResource(R.color.black),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.login),
                             color = colorResource(R.color.purple_700),
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable{
-                                navController.navigate("login")
-                            }
+                            modifier = Modifier
+                                .clickable {
+                                    navController.navigate("login")
+                                }
                         )
                     }
                 }
